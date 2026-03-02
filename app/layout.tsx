@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   description: "Exquisite handcrafted sarees and bespoke ethnic wear. Discover the heritage of Indian craftsmanship at Kalakari.",
 };
 
+export const metadata: Metadata = {
+  title: "Kalakari | Handcrafted Saree Boutique",
+  description: "Exquisite handcrafted sarees and bespoke ethnic wear. Discover the heritage of Indian craftsmanship at Kalakari.",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
