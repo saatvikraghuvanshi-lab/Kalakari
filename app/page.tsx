@@ -16,7 +16,9 @@ const SAMPLE_IMAGES = [
   "https://theloomstore.in/cdn/shop/files/IMG_5243.jpg?v=1698303816&width=1946",
   "https://clothsvilla.com/cdn/shop/products/WhatsAppImage2022-04-02at2.31.50PM_3_1024x1024.jpg?v=1648890244",
   "https://media.samyakk.in/pub/media/catalog/product/l/i/light-brown-sequins-work-saree-with-readymade-full-sleeves-blouse-gh6037-a.jpg",
-  "https://media.samyakk.in/pub/media/catalog/product/h/o/hot-pink-mirror-embroidered-silk-designer-saree-with-contrast-v-neck-blouse-jf1678-a.jpg"
+  "https://media.samyakk.in/pub/media/catalog/product/h/o/hot-pink-mirror-embroidered-silk-designer-saree-with-contrast-v-neck-blouse-jf1678-a.jpg",
+  "https://cdn.cosmos.so/d87eaebb-5652-4e0c-8ec4-7214d4d45097?format=jpeg",
+  "https://cdn.cosmos.so/c236e60f-4d49-46cc-a98e-ee06d0e845d8?format=jpeg"
 ];
 
 export default function Page() {
