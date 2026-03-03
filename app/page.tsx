@@ -11,14 +11,51 @@ import {
   Menu,
   X,
   Instagram,
-  Facebook
+  Facebook,
+  Sparkles
 } from 'lucide-react';
 
 const CATEGORIES = ['Saree', 'Lehenga', 'Kurta Set'] as const;
-const FABRICS = ['Silk', 'Georgette', 'Organza', 'Velvet', 'Chiffon', 'Crepe', 'Chanderi', 'Banarasi', 'Raw Silk', 'Cotton', 'Linen', 'Net'];
-const EMBROIDERY_STYLES = ['Zardosi', 'Chikankari', 'Mirror Work', 'Thread Work', 'Gota Patti', 'Kantha', 'Aari', 'Resham', 'Sequin', 'Applique'];
+const FABRICS = ['Silk', 'Georgette', 'Organza', 'Chiffon', 'Crepe', 'Chanderi', 'Raw Silk', 'Cotton', 'Linen',];
+const EMBROIDERY_STYLES = ['Zardosi', 'Mirror Work', 'Thread Work', 'Gota Patti', 'Aari','Sequin'];
 type Category = typeof CATEGORIES[number];
+const BOUTIQUE_COLORS = [
+  // METALLICS & LUXE
+  { name: 'Champagne', hex: '#F7E7CE', category: 'Metallic' },
+  { name: 'Gold', hex: '#D4AF37', category: 'Metallic' },
+  { name: 'Antique Gold', hex: '#B8860B', category: 'Metallic' },
+  { name: 'Copper', hex: '#B87333', category: 'Metallic' },
+  { name: 'Silver', hex: '#C0C0C0', category: 'Metallic' },
+  
+  // JEWEL TONES (Deep & Rich)
+  { name: 'Crimson', hex: '#9E1B32', category: 'Jewel' },
+  { name: 'Ruby Wine', hex: '#72010F', category: 'Jewel' },
+  { name: 'Midnight Blue', hex: '#191970', category: 'Jewel' },
+  { name: 'Royal Indigo', hex: '#3F00FF', category: 'Jewel' },
+  { name: 'Emerald', hex: '#046307', category: 'Jewel' },
+  { name: 'Forest Green', hex: '#013220', category: 'Jewel' },
+  { name: 'Peacock Teal', hex: '#004953', category: 'Jewel' },
+  { name: 'Deep Plum', hex: '#4B0082', category: 'Jewel' },
+  { name: 'Mulberry', hex: '#770737', category: 'Jewel' },
 
+  // EARTH, SPICE & SUNSET
+  { name: 'Mustard', hex: '#E1AD01', category: 'Earth' },
+  { name: 'Ochre', hex: '#CC7722', category: 'Earth' },
+  { name: 'Burnt Orange', hex: '#CC5500', category: 'Earth' },
+  { name: 'Rust', hex: '#8B4513', category: 'Earth' },
+  { name: 'Terracotta', hex: '#E2725B', category: 'Earth' },
+  { name: 'Coffee', hex: '#6F4E37', category: 'Earth' },
+
+  // PASTELS & SOFT TONES
+  { name: 'Ivory', hex: '#FFFFF0', category: 'Pastel' },
+  { name: 'Powder Blue', hex: '#B0E0E6', category: 'Pastel' },
+  { name: 'Dusty Rose', hex: '#DCAE96', category: 'Pastel' },
+  { name: 'Mauve', hex: '#E0B0FF', category: 'Pastel' },
+  { name: 'Sage Green', hex: '#BCCAAD', category: 'Pastel' },
+  { name: 'Mint', hex: '#F5FFFA', category: 'Pastel' },
+  { name: 'Lilac', hex: '#C8A2C8', category: 'Pastel' },
+  { name: 'Peach Puff', hex: '#FFDAB9', category: 'Pastel' },
+];
 export default function Page() {
   const [category, setCategory] = useState<Category>('Saree');
   const [fabric, setFabric] = useState(FABRICS[0]);
@@ -37,19 +74,25 @@ export default function Page() {
     setMeasurements(prev => ({ ...prev, [name]: value }));
   };
 
-  const generateWhatsAppLink = () => {
+ const generateWhatsAppLink = () => {
     const phoneNumber = '917991464638';
-    const message = `Hello! I'd like to place a custom order with KALAKARI by Chhaya:
+    
+    const message = `✨ NEW CUSTOM ORDER - KALAKARI ✨
 
 Item: ${category}
 Fabric: ${fabric}
 Embroidery: ${embroidery}
 Color: ${color || 'Not specified'}
 
-Measurements: B:${measurements.bust || '-'}, W:${measurements.waist || '-'}, H:${measurements.hips || '-'}, L:${measurements.length || '-'}`;
+📏 MEASUREMENTS (Inches):
+• Bust: ${measurements.bust || '-'}
+• Waist: ${measurements.waist || '-'}
+• Hips: ${measurements.hips || '-'}
+• Length: ${measurements.length || '-'}
 
-    const encodedMessage = encodeURIComponent(message);
-    return `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+Please let me know the next steps for payment and timeline!`;
+
+    return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
   };
 
   return (
@@ -197,7 +240,7 @@ Measurements: B:${measurements.bust || '-'}, W:${measurements.waist || '-'}, H:$
 
               <section>
                 <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-neutral-900 mb-3">
-                  <Palette size={14} /> Embroidery Style
+                  <Sparkles size={14} /> Embroidery Style
                 </label>
                 <select 
                   value={embroidery}
@@ -207,8 +250,55 @@ Measurements: B:${measurements.bust || '-'}, W:${measurements.waist || '-'}, H:$
                   {EMBROIDERY_STYLES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </section>
-            </div>
+              <section className="mt-6">
+          <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-neutral-900 mb-4">
+            <Palette size={14} /> Color Palette
+          </label>
+          
+          <div className="space-y-4 mb-6 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar border-b border-neutral-100 pb-4">
+            {['Metallic', 'Jewel', 'Earth', 'Pastel'].map((cat) => (
+              <div key={cat}>
+                <span className="text-[9px] uppercase tracking-tighter text-neutral-400 mb-2 block font-bold">{cat} Shades</span>
+                <div className="flex flex-wrap gap-2">
+                  {BOUTIQUE_COLORS.filter(c => c.category === cat).map((c) => (
+                    <button
+                      key={c.name}
+                      type="button"
+                      onClick={() => setColor(c.name)}
+                      title={c.name}
+                      className={`w-7 h-7 rounded-full border transition-all duration-300 hover:scale-125 ${
+                        color === c.name 
+                          ? 'border-black ring-2 ring-offset-2 ring-neutral-200 scale-110 shadow-sm' 
+                          : 'border-neutral-200'
+                      }`}
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
 
+          <div className="relative">
+            <input 
+              type="text"
+              placeholder="Selected Color or Custom Shade..."
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900 outline-none focus:border-black transition-all"
+            />
+            {color && (
+              <button 
+                onClick={() => setColor('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-neutral-400 hover:text-black uppercase font-bold"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </section>
+            </div>
+            
             <section>
               <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-neutral-900 mb-3">
                 <Palette size={14} /> Color Preference
@@ -251,8 +341,7 @@ Measurements: B:${measurements.bust || '-'}, W:${measurements.waist || '-'}, H:$
             {/* Size Guide Toggle */}
       <div className="mt-4 mb-6">
         <button 
-          type="button"
-          onClick={() => setShowSizeChart(!showSizeChart)}
+          type="button"          onClick={() => setShowSizeChart(!showSizeChart)}
           className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-neutral-500 hover:text-black transition-colors"
         >
           {showSizeChart ? <X size={14} /> : <Ruler size={14} />}
