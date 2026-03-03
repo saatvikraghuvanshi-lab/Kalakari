@@ -85,6 +85,7 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 flex flex-col">
+      {/* NAVIGATION */}
       <nav className="sticky top-0 z-50 bg-[#FAF9F6] border-b border-[#E3D9C6]/30 px-8 py-5 flex justify-between items-center shadow-sm backdrop-blur-md">
         <div className="flex items-center gap-12">
           <span className="font-serif text-2xl tracking-[0.15em] italic uppercase font-black cursor-pointer text-[#2D2926]">KALAKARI</span>
@@ -101,6 +102,7 @@ export default function Page() {
         </button>
       </nav>
 
+      {/* MAIN CONTENT */}
       <main className="max-w-7xl mx-auto w-full px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-16 flex-grow">
         <div className="space-y-8">
           <h1 className="font-serif text-6xl md:text-8xl text-neutral-900 leading-[0.9] tracking-tighter">
@@ -113,6 +115,7 @@ export default function Page() {
           </div>
         </div>
 
+        {/* CUSTOMIZER BOX */}
         <div className="bg-[#FAF9F6] rounded-[3rem] p-8 md:p-12 border border-[#E3D9C6]/30 shadow-2xl space-y-10 h-fit">
           <div>
             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E] mb-5 block">Select Category</label>
@@ -124,6 +127,7 @@ export default function Page() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* FABRIC WHEEL */}
             <section className="space-y-4">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E] block">1. Fabric & Color</label>
               <select className="w-full bg-white border border-[#E3D9C6]/40 rounded-2xl px-5 py-4 text-sm font-bold outline-none" value={fabric} onChange={(e)=>setFabric(e.target.value)}>
@@ -135,6 +139,7 @@ export default function Page() {
               </div>
             </section>
             
+            {/* EMBROIDERY WHEEL */}
             <section className="space-y-4">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E] block">2. Embroidery & Shade</label>
               <select className="w-full bg-white border border-[#E3D9C6]/40 rounded-2xl px-5 py-4 text-sm font-bold outline-none" value={embroidery} onChange={(e)=>setEmbroidery(e.target.value)}>
@@ -147,10 +152,11 @@ export default function Page() {
             </section>
           </div>
 
+          {/* SIZING SECTION */}
           <section className="pt-8 border-t border-[#E3D9C6]/30">
             <div className="flex justify-between items-center mb-5 text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E]">
               <span className="flex items-center gap-2"><Ruler size={14}/> Sizing</span>
-              <button onClick={() => setShowSizeChart(!showSizeChart)} className="underline">Size Guide</button>
+              <button onClick={() => setShowSizeChart(true)} className="underline cursor-pointer">Size Guide</button>
             </div>
             {['Dress', 'T-Shirt', 'Shirt'].includes(category) ? (
               <div className="flex gap-2 overflow-x-auto pb-2">
@@ -170,13 +176,69 @@ export default function Page() {
             ) : <p className="text-[10px] font-black italic text-neutral-300 uppercase">Free Size</p>}
           </section>
 
-          <button onClick={addToCart} className="w-full bg-[#2D2926] text-white py-6 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl hover:bg-[#B19470] transition-all flex items-center justify-center gap-3">
+          <button onClick={addToCart} className="w-full bg-[#2D2926] text-white py-6 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl hover:bg-[#B19470] transition-all flex items-center justify-center gap-3 active:scale-[0.98]">
             <Plus size={18}/> Add to Bag
           </button>
         </div>
       </main>
 
+      {/* FOOTER */}
+      <footer className="bg-[#FAF9F6] border-t border-[#E3D9C6]/30 py-12 px-8 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+          <span className="font-serif text-xl italic tracking-[0.2em] font-black uppercase text-[#2D2926]">KALAKARI</span>
+          <div className="flex gap-6">
+            <a href="https://www.instagram.com/hajelachhaya" target="_blank" className="p-3 bg-white border border-[#E3D9C6]/20 rounded-full text-[#8C867E] hover:bg-[#2D2926] hover:text-white transition-all"><Instagram size={20}/></a>
+            <a href="https://www.facebook.com/share/1CcqEsncpY/" target="_blank" className="p-3 bg-white border border-[#E3D9C6]/20 rounded-full text-[#8C867E] hover:bg-[#2D2926] hover:text-white transition-all"><Facebook size={20}/></a>
+          </div>
+        </div>
+      </footer>
+
+      {/* OVERLAYS & MODALS */}
       <AnimatePresence>
+        {/* SIZE GUIDE MODAL */}
+        {showSizeChart && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowSizeChart(false)} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100]" />
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="fixed inset-0 m-auto w-[90%] max-w-xl h-fit bg-white z-[110] p-8 md:p-12 rounded-[3rem] shadow-2xl">
+              <button onClick={() => setShowSizeChart(false)} className="absolute top-8 right-8 text-neutral-300 hover:text-black transition-all"><X size={28}/></button>
+              <h2 className="font-serif text-3xl italic mb-8 uppercase tracking-tight">Standard Size Chart</h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-[10px] font-black uppercase tracking-widest">
+                  <thead>
+                    <tr className="border-b border-neutral-100 text-[#8C867E]">
+                      <th className="py-4">Size</th><th className="py-4">Bust</th><th className="py-4">Waist</th><th className="py-4">Hips</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-[#2D2926]">
+                    {[['XS','32','26','35'],['S','34','28','37'],['M','36','30','39'],['L','38','32','41'],['XL','40','34','43']].map((row) => (
+                      <tr key={row[0]} className="border-b border-neutral-50"><td className="py-4">{row[0]}</td><td className="py-4">{row[1]}"</td><td className="py-4">{row[2]}"</td><td className="py-4">{row[3]}"</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-8 text-[9px] text-[#8C867E] italic uppercase leading-relaxed">* All measurements are in inches. For custom bespoke fits, please provide your exact measurements in the fields provided.</p>
+            </motion.div>
+          </>
+        )}
+
+        {/* OUR STORY MODAL */}
+        {showStory && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowStory(false)} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100]" />
+            <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="fixed inset-0 m-auto w-[90%] max-w-2xl h-fit bg-white z-[110] p-10 md:p-16 rounded-[3rem] shadow-2xl overflow-y-auto max-h-[85vh]">
+              <button onClick={() => setShowStory(false)} className="absolute top-8 right-8 text-neutral-300 hover:text-black transition-all"><X size={28}/></button>
+              <div className="space-y-8">
+                <h2 className="font-serif text-4xl italic text-neutral-900 leading-tight">Curated by Heritage. <br/><span className="text-neutral-300">Crafted for You.</span></h2>
+                <div className="space-y-6 text-neutral-600 leading-[1.8] text-sm md:text-base">
+                  <p>At <strong className="text-black uppercase tracking-widest text-xs">Kalakari</strong>, we bridge the gap between the master weaver’s courtyard and the modern woman’s wardrobe.</p>
+                  <p>We invite you to be the <strong>architect of your own elegance.</strong> Rooted in Rajasthan, refined for the world.</p>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+
+        {/* CART SIDEBAR */}
         {isCartOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCartOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60]" />
@@ -203,16 +265,18 @@ export default function Page() {
                   </div>
                 )}
                 
-                {cart.map((item: any) => (
-                  <div key={item.id} className="border-b pb-4">
-                    <div className="flex justify-between items-start">
-                      <h4 className="font-black text-sm uppercase">{item.category}</h4>
-                      <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-neutral-300 hover:text-red-500"><Trash2 size={16}/></button>
+                {cart.length === 0 ? <p className="text-center text-[10px] font-black uppercase text-neutral-300 py-20">Your bag is empty</p> : 
+                  cart.map((item: any) => (
+                    <div key={item.id} className="border-b pb-4">
+                      <div className="flex justify-between items-start">
+                        <h4 className="font-black text-sm uppercase">{item.category}</h4>
+                        <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-neutral-300 hover:text-red-500 transition-colors"><Trash2 size={16}/></button>
+                      </div>
+                      <p className="text-[10px] font-bold text-neutral-400 uppercase">{item.fabric} ({item.color}) • {item.embroidery} ({item.embroideryColor})</p>
+                      <p className="text-[10px] mt-1 font-black">{item.sizeOrMeasurements}</p>
                     </div>
-                    <p className="text-[10px] font-bold text-neutral-400 uppercase">{item.fabric} ({item.color}) • {item.embroidery} ({item.embroideryColor})</p>
-                    <p className="text-[10px] mt-1 font-black">{item.sizeOrMeasurements}</p>
-                  </div>
-                ))}
+                  ))
+                }
               </div>
 
               {cart.length > 0 && (
@@ -221,7 +285,7 @@ export default function Page() {
                     if(!customerInfo.name || !customerInfo.address || !customerInfo.number) { alert("Please fill Name, Number and Address!"); return; } 
                     window.open(generateWhatsAppLink(), '_blank'); 
                   }} 
-                  className="w-full bg-[#2D2926] text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] mt-8 flex items-center justify-center gap-3 shadow-xl"
+                  className="w-full bg-[#2D2926] text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] mt-8 flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all"
                 >
                   <MessageCircle size={18}/> Place via WhatsApp
                 </button>
