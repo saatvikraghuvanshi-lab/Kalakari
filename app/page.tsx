@@ -15,9 +15,8 @@ import {
 } from 'lucide-react';
 
 const CATEGORIES = ['Saree', 'Lehenga', 'Kurta Set'] as const;
-const FABRICS = ['Silk', 'Georgette', 'Organza', 'Velvet', 'Chiffon', 'Crepe'];
-const EMBROIDERY_STYLES = ['Zardosi', 'Chikankari', 'Mirror Work', 'Thread Work', 'Gota Patti', 'Kantha'];
-
+const FABRICS = ['Silk', 'Georgette', 'Organza', 'Velvet', 'Chiffon', 'Crepe', 'Chanderi', 'Banarasi', 'Raw Silk', 'Cotton', 'Linen', 'Net'];
+const EMBROIDERY_STYLES = ['Zardosi', 'Chikankari', 'Mirror Work', 'Thread Work', 'Gota Patti', 'Kantha', 'Aari', 'Resham', 'Sequin', 'Applique'];
 type Category = typeof CATEGORIES[number];
 
 export default function Page() {
@@ -32,7 +31,7 @@ export default function Page() {
     length: ''
   });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  const [showSizeChart, setShowSizeChart] = useState(false); 
   const handleMeasurementChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setMeasurements(prev => ({ ...prev, [name]: value }));
@@ -249,7 +248,59 @@ Measurements: B:${measurements.bust || '-'}, W:${measurements.waist || '-'}, H:$
                 ))}
               </div>
             </section>
+            {/* Size Guide Toggle */}
+      <div className="mt-4 mb-6">
+        <button 
+          type="button"
+          onClick={() => setShowSizeChart(!showSizeChart)}
+          className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-neutral-500 hover:text-black transition-colors"
+        >
+          {showSizeChart ? <X size={14} /> : <Ruler size={14} />}
+          {showSizeChart ? "Close Size Guide" : "View Sizing & How to Measure"}
+        </button>
 
+        <AnimatePresence>
+          {showSizeChart && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-6 p-6 bg-neutral-50 rounded-2xl border border-neutral-100">
+                <h3 className="font-serif text-xl mb-4 text-neutral-900">Standard Size Guide (Inches)</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs mb-6">
+                    <thead>
+                      <tr className="border-b border-neutral-200 text-neutral-400 uppercase tracking-tighter">
+                        <th className="py-2">Size</th>
+                        <th>Bust</th>
+                        <th>Waist</th>
+                        <th>Hips</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-neutral-700 font-medium">
+                      <tr className="border-b border-neutral-100"><td className="py-3 font-bold text-neutral-900 uppercase">S</td><td>34</td><td>28</td><td>36</td></tr>
+                      <tr className="border-b border-neutral-100"><td className="py-3 font-bold text-neutral-900 uppercase">M</td><td>36</td><td>30</td><td>38</td></tr>
+                      <tr className="border-b border-neutral-100"><td className="py-3 font-bold text-neutral-900 uppercase">L</td><td>38</td><td>32</td><td>40</td></tr>
+                      <tr><td className="py-3 font-bold text-neutral-900 uppercase">XL</td><td>40</td><td>34</td><td>42</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div className="space-y-3 pt-4 border-t border-neutral-200">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-900">Pro-Tips for Chhaya's Boutique:</p>
+                  <ul className="text-[11px] text-neutral-600 space-y-1">
+                    <li>• Measure over the undergarments you plan to wear.</li>
+                    <li>• For Lehengas, measure length while wearing your heels.</li>
+                    <li>• Bust is the most critical for a perfect Saree Blouse fit.</li>
+                  </ul>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
             {/* Submit Button */}
             <a 
               href={generateWhatsAppLink()}
