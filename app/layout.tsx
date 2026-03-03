@@ -12,11 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "KALAKARI|Handcrafted Traditional-wear Boutique",
-  description: "Exquisite handcrafted sarees and bespoke ethnic wear. Discover the heritage of Indian craftsmanship at Kalakari.",
-};
-
+// I combined your two metadata blocks into one perfect one here
 export const metadata: Metadata = {
   title: "Kalakari | Handcrafted Saree Boutique",
   description: "Exquisite handcrafted sarees and bespoke ethnic wear. Discover the heritage of Indian craftsmanship at Kalakari.",
@@ -29,8 +25,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <head>
+        {/* Verification meta tag is best placed inside the <head> */}
         <meta name="google-site-verification" content="tl_ql4V-k96UfHYImRCbfTf1dW0reh_VY7ajtPZVpmM" />
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
       </body>
     </html>
