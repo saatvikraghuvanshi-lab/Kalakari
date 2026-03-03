@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ShoppingBag, MessageCircle, X, Trash2, Plus, Scissors, Sparkles, Palette, Ruler, ChevronRight
+  ShoppingBag, MessageCircle, X, Trash2, Plus, Palette, Ruler, ChevronRight, Facebook, Instagram
 } from 'lucide-react';
 
 // --- DATA ---
@@ -42,18 +42,9 @@ const BOUTIQUE_COLORS = [
   { name: 'Peach Puff', hex: '#FFDAB9', category: 'Pastel' },
 ];
 
-interface CartItem {
-  id: number;
-  category: string;
-  fabric: string;
-  embroidery: string;
-  color: string;
-  sizeOrMeasurements: string;
-  notes: string;
-}
-
 export default function Page() {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showSizeChart, setShowSizeChart] = useState(false);
   const [category, setCategory] = useState<typeof CATEGORIES[number]>('Saree');
   const [fabric, setFabric] = useState(FABRICS[0]);
   const [embroidery, setEmbroidery] = useState(EMBROIDERY_STYLES[0]);
@@ -61,7 +52,7 @@ export default function Page() {
   const [selectedSize, setSelectedSize] = useState<string>('M');
   const [notes, setNotes] = useState('');
   const [measurements, setMeasurements] = useState({ bust: '', waist: '', hips: '', length: '' });
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<any[]>([]);
 
   const addToCart = () => {
     let sizeInfo = ['Dress', 'T-Shirt', 'Shirt'].includes(category) 
@@ -69,22 +60,9 @@ export default function Page() {
       : ['Scarf', 'Stole'].includes(category) ? `Free Size` 
       : `B:${measurements.bust || '-'} W:${measurements.waist || '-'} H:${measurements.hips || '-'} L:${measurements.length || '-'}`;
 
-    const newItem: CartItem = {
-      id: Date.now(),
-      category, fabric, embroidery,
-      color: color || 'As per sample',
-      sizeOrMeasurements: sizeInfo,
-      notes
-    };
-
+    const newItem = { id: Date.now(), category, fabric, embroidery, color: color || 'As per sample', sizeOrMeasurements: sizeInfo, notes };
     setCart([...cart, newItem]);
     setIsCartOpen(true);
-    setNotes('');
-    setColor('');
-  };
-
-  const removeFromCart = (id: number) => {
-    setCart(cart.filter(item => item.id !== id));
   };
 
   const generateWhatsAppLink = () => {
@@ -97,146 +75,180 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900">
-      <nav className="sticky top-0 z-50 bg-white border-b border-neutral-200 px-6 py-4 flex justify-between items-center shadow-sm">
-        <span className="font-serif text-2xl tracking-widest text-neutral-900 italic uppercase">KALAKARI</span>
+    <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 flex flex-col">
+      {/* HEADER */}
+      <nav className="sticky top-0 z-50 bg-white border-b border-neutral-200 px-8 py-5 flex justify-between items-center shadow-sm">
+        <div className="flex items-center gap-12">
+          <span className="font-serif text-2xl tracking-widest italic uppercase font-black">KALAKARI</span>
+          <div className="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-widest text-neutral-500">
+            <a href="#" className="hover:text-black transition-colors">Collections</a>
+            <a href="#" className="hover:text-black transition-colors">Bespoke</a>
+            <a href="#" className="hover:text-black transition-colors">Our Story</a>
+            <a href="#" className="hover:text-black transition-colors">Contact</a>
+          </div>
+        </div>
         <button onClick={() => setIsCartOpen(true)} className="relative p-2">
-          <ShoppingBag size={24} className="text-neutral-900" />
-          {cart.length > 0 && (
-            <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">{cart.length}</span>
-          )}
+          <ShoppingBag size={22} className="text-black" />
+          {cart.length > 0 && <span className="absolute -top-1 -right-1 bg-black text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center font-bold">{cart.length}</span>}
         </button>
       </nav>
 
-      <main className="max-w-7xl mx-auto w-full px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <main className="max-w-7xl mx-auto w-full px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-16 flex-grow">
+        {/* LEFT SIDE: TITLES & IMAGES */}
         <div className="space-y-8">
-            <h1 className="font-serif text-5xl md:text-7xl text-neutral-900 leading-tight">Your Boutique <br/><span className="italic text-neutral-400">Your Way.</span></h1>
-            <div className="grid grid-cols-2 gap-4">
-               <img src="https://cdn.cosmos.so/f93f0193-712e-47bf-a6f2-e1b3e03ab2c0?format=jpeg" className="rounded-2xl h-80 w-full object-cover shadow-lg" alt="Ethnic"/>
-               <img src="https://cdn.cosmos.so/63b79183-79ee-408e-b4c4-4d9be715dd2f?format=jpeg" className="rounded-2xl h-80 w-full object-cover mt-8 shadow-lg" alt="Lehenga"/>
-            </div>
+          <h1 className="font-serif text-6xl md:text-8xl text-neutral-900 leading-[0.9] tracking-tighter">Your Boutique <br/><span className="italic text-neutral-300">Your Way.</span></h1>
+          <div className="grid grid-cols-2 gap-4">
+            <img src="https://cdn.cosmos.so/f93f0193-712e-47bf-a6f2-e1b3e03ab2c0?format=jpeg" className="rounded-3xl h-[400px] w-full object-cover shadow-2xl" alt="Ethnic 1"/>
+            <img src="https://cdn.cosmos.so/63b79183-79ee-408e-b4c4-4d9be715dd2f?format=jpeg" className="rounded-3xl h-[400px] w-full object-cover mt-12 shadow-2xl" alt="Ethnic 2"/>
+          </div>
         </div>
 
-        <div className="bg-white rounded-[2.5rem] p-8 md:p-12 border border-neutral-100 shadow-2xl">
-          <div className="space-y-10">
-            {/* Category */}
-            <div>
-              <label className="text-xs font-black uppercase tracking-[0.2em] text-neutral-900 mb-4 block">Select Category</label>
-              <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map(cat => (
-                  <button key={cat} onClick={() => setCategory(cat)}
-                    className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${category === cat ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'}`}>
-                    {cat}
-                  </button>
+        {/* RIGHT SIDE: CUSTOMIZER FORM */}
+        <div className="bg-white rounded-[3rem] p-8 md:p-12 border border-neutral-100 shadow-2xl space-y-10">
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-5 block">Select Category</label>
+            <div className="flex flex-wrap gap-2">
+              {CATEGORIES.map(cat => (
+                <button key={cat} onClick={() => setCategory(cat)} className={`px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${category === cat ? 'bg-black text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200'}`}>{cat}</button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <section>
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-3 block">Fabric</label>
+              <select className="w-full bg-neutral-50 border border-neutral-200 rounded-2xl px-5 py-4 text-sm font-bold appearance-none outline-none focus:border-black" value={fabric} onChange={(e)=>setFabric(e.target.value)}>
+                {FABRICS.map(f => <option key={f}>{f}</option>)}
+              </select>
+            </section>
+            <section>
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-3 block">Embroidery</label>
+              <select className="w-full bg-neutral-50 border border-neutral-200 rounded-2xl px-5 py-4 text-sm font-bold appearance-none outline-none focus:border-black" value={embroidery} onChange={(e)=>setEmbroidery(e.target.value)}>
+                {EMBROIDERY_STYLES.map(s => <option key={s}>{s}</option>)}
+              </select>
+            </section>
+          </div>
+
+          <section>
+            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-5 block flex items-center gap-2"><Palette size={14}/> Color Palette</label>
+            <div className="max-h-[200px] overflow-y-auto pr-2 space-y-6 custom-scrollbar mb-6 border-b border-neutral-50 pb-4">
+              {['Metallic', 'Jewel', 'Earth', 'Pastel'].map(group => (
+                <div key={group}>
+                  <p className="text-[9px] font-black uppercase text-neutral-300 mb-3 tracking-widest">{group}</p>
+                  <div className="flex flex-wrap gap-3">
+                    {BOUTIQUE_COLORS.filter(c => c.category === group).map((c) => (
+                      <button key={c.name} onClick={() => setColor(c.name)} className={`w-10 h-10 rounded-full border-2 transition-all hover:scale-110 ${color === c.name ? 'border-black ring-2 ring-neutral-100 ring-offset-2' : 'border-neutral-100'}`} style={{ backgroundColor: c.hex }} title={c.name} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <input type="text" placeholder="Custom shade name..." className="w-full bg-neutral-50 border border-neutral-200 rounded-2xl px-6 py-4 text-sm font-bold outline-none focus:border-black" value={color} onChange={(e)=>setColor(e.target.value)} />
+          </section>
+
+          <section className="pt-8 border-t border-neutral-100">
+            <div className="flex justify-between items-center mb-5">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 flex items-center gap-2"><Ruler size={14}/> Sizing</label>
+              <button onClick={() => setShowSizeChart(!showSizeChart)} className="text-[9px] font-black uppercase underline tracking-widest text-neutral-400 hover:text-black">Size Guide</button>
+            </div>
+
+            {['Dress', 'T-Shirt', 'Shirt'].includes(category) ? (
+              <div className="flex gap-2">
+                {STANDARD_SIZES.map(s => (
+                  <button key={s} onClick={() => setSelectedSize(s)} className={`w-12 h-12 rounded-xl border-2 text-[10px] font-black transition-all ${selectedSize === s ? 'bg-black text-white border-black shadow-md' : 'bg-white text-neutral-300 border-neutral-100'}`}>{s}</button>
                 ))}
               </div>
-            </div>
-
-            {/* Fabric/Embroidery */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <section>
-                <label className="text-xs font-black uppercase tracking-[0.2em] text-neutral-900 mb-3 block">Fabric</label>
-                <select value={fabric} onChange={(e) => setFabric(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-4 text-sm font-bold text-neutral-900 outline-none focus:border-black appearance-none">
-                  {FABRICS.map(f => <option key={f} value={f}>{f}</option>)}
-                </select>
-              </section>
-              <section>
-                <label className="text-xs font-black uppercase tracking-[0.2em] text-neutral-900 mb-3 block">Embroidery</label>
-                <select value={embroidery} onChange={(e) => setEmbroidery(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-4 text-sm font-bold text-neutral-900 outline-none focus:border-black appearance-none">
-                  {EMBROIDERY_STYLES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </section>
-            </div>
-
-            {/* Color Palette */}
-            <section>
-              <label className="text-xs font-black uppercase tracking-[0.2em] text-neutral-900 mb-4 block flex items-center gap-2"><Palette size={16}/> Color Palette</label>
-              <div className="max-h-[250px] overflow-y-auto pr-2 space-y-6 custom-scrollbar mb-4 border-b border-neutral-100 pb-4">
-                {['Metallic', 'Jewel', 'Earth', 'Pastel'].map(group => (
-                  <div key={group}>
-                    <p className="text-[10px] font-black uppercase text-neutral-500 mb-2">{group}</p>
-                    <div className="flex flex-wrap gap-3">
-                      {BOUTIQUE_COLORS.filter(c => c.category === group).map((c) => (
-                        <button key={c.name} onClick={() => setColor(c.name)} title={c.name}
-                          className={`w-9 h-9 rounded-full border-2 transition-all hover:scale-110 ${color === c.name ? 'border-black ring-2 ring-neutral-100 ring-offset-2' : 'border-neutral-200'}`}
-                          style={{ backgroundColor: c.hex }} />
-                      ))}
-                    </div>
+            ) : !['Scarf', 'Stole'].includes(category) ? (
+              <div className="grid grid-cols-4 gap-3">
+                {['bust', 'waist', 'hips', 'length'].map(m => (
+                  <div key={m}>
+                    <span className="text-[8px] font-black uppercase text-neutral-400 block mb-1.5 text-center">{m}</span>
+                    <input type="number" placeholder="0" className="w-full bg-neutral-50 border border-neutral-200 rounded-xl p-3 text-sm font-bold text-center outline-none focus:border-black" onChange={(e) => setMeasurements({...measurements, [m]: e.target.value})} />
                   </div>
                 ))}
               </div>
-              <input type="text" placeholder="Custom shade name..." value={color} onChange={(e) => setColor(e.target.value)}
-                className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-4 text-sm font-bold text-neutral-900 outline-none focus:border-black" />
-            </section>
+            ) : <p className="text-[10px] font-black uppercase text-neutral-300 italic font-black">Free Size</p>}
 
-            {/* Sizing */}
-            <section className="pt-6 border-t border-neutral-100">
-              <label className="text-xs font-black uppercase tracking-[0.2em] text-neutral-900 mb-4 block flex items-center gap-2"><Ruler size={16}/> Sizing</label>
-              {['Dress', 'T-Shirt', 'Shirt'].includes(category) ? (
-                <div className="flex gap-2">
-                  {STANDARD_SIZES.map(s => (
-                    <button key={s} onClick={() => setSelectedSize(s)} className={`w-11 h-11 rounded-xl border-2 text-[10px] font-black transition-all ${selectedSize === s ? 'bg-black text-white border-black shadow-md' : 'bg-white text-neutral-400 border-neutral-100 hover:border-neutral-300'}`}>{s}</button>
-                  ))}
-                </div>
-              ) : !['Scarf', 'Stole'].includes(category) ? (
-                <div className="grid grid-cols-4 gap-3">
-                  {['bust', 'waist', 'hips', 'length'].map(m => (
-                    <div key={m}>
-                      <span className="text-[9px] font-black uppercase text-neutral-500 block mb-1 text-center">{m}</span>
-                      <input type="number" placeholder="0" className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-3 text-sm font-bold text-center text-neutral-900 outline-none focus:border-black"
-                        onChange={(e) => setMeasurements({...measurements, [m as keyof typeof measurements]: e.target.value})} />
-                    </div>
-                  ))}
-                </div>
-              ) : <p className="text-xs font-bold text-neutral-400 italic font-black">Free Size</p>}
-            </section>
+            <AnimatePresence>
+              {showSizeChart && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mt-6">
+                  <div className="p-6 bg-neutral-50 rounded-2xl border border-neutral-100">
+                    <table className="w-full text-left text-[10px] font-bold">
+                      <thead className="text-neutral-400 uppercase tracking-widest border-b border-neutral-200">
+                        <tr><th className="py-2">Size</th><th>Bust</th><th>Waist</th><th>Hips</th></tr>
+                      </thead>
+                      <tbody className="text-neutral-600 uppercase">
+                        <tr className="border-b border-neutral-100"><td className="py-2 text-black">XS</td><td>32</td><td>26</td><td>34</td></tr>
+                        <tr className="border-b border-neutral-100"><td className="py-2 text-black">S</td><td>34</td><td>28</td><td>36</td></tr>
+                        <tr className="border-b border-neutral-100"><td className="py-2 text-black">M</td><td>36</td><td>30</td><td>38</td></tr>
+                        <tr className="border-b border-neutral-100"><td className="py-2 text-black">L</td><td>38</td><td>32</td><td>40</td></tr>
+                        <tr><td className="py-2 text-black">XL</td><td>40</td><td>34</td><td>42</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </section>
 
-            <section>
-              <label className="text-xs font-black uppercase tracking-[0.2em] text-neutral-900 mb-3 block">Special Requests</label>
-              <textarea placeholder="Add any notes here..." value={notes} onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-neutral-50 border border-neutral-200 rounded-2xl px-4 py-4 text-sm font-bold text-neutral-900 min-h-[100px] outline-none focus:border-black" />
-            </section>
+          <section>
+            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-3 block">Special Requests</label>
+            <textarea placeholder="e.g. Extra tassels, specific length..." className="w-full bg-neutral-50 border border-neutral-200 rounded-3xl px-6 py-4 text-sm font-bold min-h-[100px] outline-none focus:border-black" value={notes} onChange={(e)=>setNotes(e.target.value)} />
+          </section>
 
-            <button onClick={addToCart} className="w-full bg-black text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 hover:bg-neutral-800 transition-all shadow-2xl">
-              <Plus size={20} /> Add to Bag
-            </button>
-          </div>
+          <button onClick={addToCart} className="w-full bg-black text-white py-6 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl hover:bg-neutral-800 transition-all flex items-center justify-center gap-3 active:scale-[0.98]">
+            <Plus size={18}/> Add to Bag
+          </button>
         </div>
       </main>
+
+      {/* FOOTER */}
+      <footer className="bg-white border-t border-neutral-200 py-12 px-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+          <span className="font-serif text-xl italic tracking-widest font-black uppercase">KALAKARI</span>
+          <div className="flex gap-10 text-[10px] font-black uppercase tracking-widest text-neutral-400">
+            <a href="#" className="hover:text-black transition-colors">Shipping</a>
+            <a href="#" className="hover:text-black transition-colors">Privacy</a>
+            <a href="#" className="hover:text-black transition-colors">Terms</a>
+          </div>
+          <div className="flex gap-6">
+            <a href="#" className="p-3 bg-neutral-100 rounded-full hover:bg-black hover:text-white transition-all"><Instagram size={20}/></a>
+            <a href="#" className="p-3 bg-neutral-100 rounded-full hover:bg-black hover:text-white transition-all"><Facebook size={20}/></a>
+          </div>
+        </div>
+        <p className="text-center text-[9px] font-bold text-neutral-300 mt-8 tracking-[0.3em] uppercase">© 2026 KALAKARI STUDIO. Jaipur, India.</p>
+      </footer>
 
       {/* CART DRAWER */}
       <AnimatePresence>
         {isCartOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCartOpen(false)} className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60]" />
-            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25 }} className="fixed right-0 top-0 h-full w-full max-w-md bg-white z-[70] shadow-2xl p-8 flex flex-col">
-              <div className="flex justify-between items-center mb-8 border-b border-neutral-100 pb-6">
-                <h2 className="font-serif text-2xl uppercase italic tracking-widest text-neutral-900">Your Bag ({cart.length})</h2>
-                <button onClick={() => setIsCartOpen(false)} className="p-2 hover:bg-neutral-100 rounded-full transition-colors text-neutral-900"><X size={24}/></button>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCartOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60]" />
+            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25 }} className="fixed right-0 top-0 h-full w-full max-w-md bg-white z-[70] p-10 flex flex-col shadow-2xl">
+              <div className="flex justify-between items-center mb-10 border-b border-neutral-100 pb-6">
+                <h2 className="font-serif text-2xl italic tracking-widest uppercase">Bag ({cart.length})</h2>
+                <button onClick={() => setIsCartOpen(false)} className="hover:rotate-90 transition-transform duration-300"><X size={28}/></button>
               </div>
               <div className="flex-grow overflow-y-auto space-y-8 pr-2 custom-scrollbar">
                 {cart.length === 0 ? (
-                  <div className="text-center py-20 uppercase text-[10px] font-black text-neutral-400 tracking-[0.2em]">Bag is empty</div>
+                  <p className="text-center text-[10px] font-black uppercase text-neutral-300 tracking-[0.2em] py-20">Your bag is empty</p>
                 ) : (
-                  cart.map((item) => (
-                    <div key={item.id} className="flex justify-between items-start border-b border-neutral-100 pb-6 text-neutral-900">
-                      <div className="space-y-1">
-                        <h4 className="font-black text-sm uppercase">{item.category}</h4>
-                        <p className="text-[11px] font-bold uppercase">{item.fabric} • {item.embroidery} • {item.color}</p>
-                        <p className="text-[11px] font-mono text-neutral-600">{item.sizeOrMeasurements}</p>
-                        {item.notes && <p className="text-[11px] italic text-neutral-500">"{item.notes}"</p>}
+                  cart.map((item: any) => (
+                    <div key={item.id} className="border-b border-neutral-50 pb-6">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-black text-sm uppercase tracking-tighter">{item.category}</h4>
+                        <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-neutral-300 hover:text-red-500"><Trash2 size={16}/></button>
                       </div>
-                      <button onClick={() => removeFromCart(item.id)} className="text-neutral-300 hover:text-red-600 transition-colors"><Trash2 size={18}/></button>
+                      <p className="text-[11px] font-bold text-neutral-400 uppercase leading-relaxed">{item.fabric} • {item.embroidery} • {item.color}</p>
+                      <p className="text-[11px] font-mono mt-1 text-black font-black uppercase">{item.sizeOrMeasurements}</p>
                     </div>
                   ))
                 )}
               </div>
               {cart.length > 0 && (
-                <div className="pt-8">
-                  <a href={generateWhatsAppLink()} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 w-full bg-black text-white py-5 rounded-2xl font-black tracking-[0.2em] text-xs shadow-xl transition-transform active:scale-95">
-                    <MessageCircle size={18} /> Place Order via WhatsApp <ChevronRight size={16}/>
-                  </a>
-                </div>
+                <a href={generateWhatsAppLink()} target="_blank" rel="noopener noreferrer" className="w-full bg-black text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] mt-8 flex items-center justify-center gap-3 shadow-xl active:scale-[0.98] transition-transform">
+                  <MessageCircle size={18}/> Place via WhatsApp
+                </a>
               )}
             </motion.div>
           </>
