@@ -18,7 +18,11 @@ const SAMPLE_IMAGES = [
   "https://media.samyakk.in/pub/media/catalog/product/l/i/light-brown-sequins-work-saree-with-readymade-full-sleeves-blouse-gh6037-a.jpg",
   "https://media.samyakk.in/pub/media/catalog/product/h/o/hot-pink-mirror-embroidered-silk-designer-saree-with-contrast-v-neck-blouse-jf1678-a.jpg",
   "https://cdn.cosmos.so/d87eaebb-5652-4e0c-8ec4-7214d4d45097?format=jpeg",
-  "https://cdn.cosmos.so/c236e60f-4d49-46cc-a98e-ee06d0e845d8?format=jpeg"
+  "https://cdn.cosmos.so/c236e60f-4d49-46cc-a98e-ee06d0e845d8?format=jpeg",
+  "https://cdn.cosmos.so/c56cc03d-07bd-4cf6-90fa-d1cf07851f3c?format=jpeg",
+  "https://cdn.cosmos.so/d8e6098d-0e69-4fe9-b247-df846574c130?format=jpeg",
+  "https://itokri.com/cdn/shop/files/red-hand-natural-dyed-pure-cotton-stole-tassels-26-stoles-310.jpg?v=1770793113&width=480",
+  "https://itokri.com/cdn/shop/files/black-hand-natural-dyed-chanderi-silk-stole-tassels-13-stoles-182.jpg?v=1770738425&width=480"
 ];
 
 export default function Page() {
