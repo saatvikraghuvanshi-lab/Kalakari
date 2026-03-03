@@ -19,8 +19,9 @@ export default function Page() {
   const [fabric, setFabric] = useState(FABRICS[0]);
   const [embroidery, setEmbroidery] = useState(EMBROIDERY_STYLES[0]);
   
-  // COLOR STATE - Initialized to a classic Gold
-  const [color, setColor] = useState('#D4AF37');
+  // COLOR STATES
+  const [color, setColor] = useState('#D4AF37'); // Fabric Color
+  const [embroideryColor, setEmbroideryColor] = useState('#FFFFFF'); // Embroidery Color
   
   const [selectedSize, setSelectedSize] = useState<string>('M');
   const [notes, setNotes] = useState('');
@@ -47,6 +48,7 @@ export default function Page() {
       fabric, 
       embroidery, 
       color: color.toUpperCase(), 
+      embroideryColor: embroideryColor.toUpperCase(), 
       sizeOrMeasurements: sizeInfo, 
       notes 
     };
@@ -68,9 +70,8 @@ export default function Page() {
     message += `🛍️ *ORDER SUMMARY*\n`;
     cart.forEach((item, index) => {
       message += `*ITEM ${index + 1}: ${item.category.toUpperCase()}*\n`;
-      message += `• Fabric: ${item.fabric}\n`;
-      message += `• Embroidery: ${item.embroidery}\n`;
-      message += `• Color/Hex: ${item.color}\n`;
+      message += `• Fabric: ${item.fabric} (${item.color})\n`;
+      message += `• Embroidery: ${item.embroidery} (${item.embroideryColor})\n`;
       message += `• ${item.sizeOrMeasurements}\n`;
       if(item.notes) message += `• Note: ${item.notes}\n`;
       message += `--------------------------\n`;
@@ -81,7 +82,6 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 flex flex-col">
-      {/* HEADER: Pearlescent Ivory Theme */}
       <nav className="sticky top-0 z-50 bg-[#FAF9F6] border-b border-[#E3D9C6]/30 px-8 py-5 flex justify-between items-center shadow-sm backdrop-blur-md">
         <div className="flex items-center gap-12">
           <span 
@@ -99,10 +99,7 @@ export default function Page() {
               Bespoke
               <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#B19470] transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <button 
-              onClick={() => setShowStory(true)} 
-              className="hover:text-[#2D2926] transition-colors uppercase font-black relative group"
-            >
+            <button onClick={() => setShowStory(true)} className="hover:text-[#2D2926] transition-colors uppercase font-black relative group">
               Our Story
               <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#B19470] transition-all duration-300 group-hover:w-full"></span>
             </button>
@@ -123,7 +120,6 @@ export default function Page() {
       </nav>
 
       <main className="max-w-7xl mx-auto w-full px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-16 flex-grow">
-        {/* LEFT SIDE: TITLES & IMAGES */}
         <div className="space-y-8">
           <h1 className="font-serif text-6xl md:text-8xl text-neutral-900 leading-[0.9] tracking-tighter">
             Your Boutique <br/>
@@ -139,7 +135,6 @@ export default function Page() {
           </div>
         </div>
 
-        {/* RIGHT SIDE: CUSTOMIZER (Pearlescent Ivory Theme) */}
         <div className="bg-[#FAF9F6] rounded-[3rem] p-8 md:p-12 border border-[#E3D9C6]/30 shadow-2xl space-y-10 h-fit">
           <div>
             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E] mb-5 block">Select Category</label>
@@ -160,64 +155,49 @@ export default function Page() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <section>
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E] mb-3 block">Fabric</label>
-              <div className="relative group">
-                <select 
-                  className="w-full bg-white border border-[#E3D9C6]/40 rounded-2xl px-5 py-4 text-sm font-bold appearance-none outline-none focus:border-[#B19470] text-[#2D2926] shadow-sm transition-all" 
-                  value={fabric} 
-                  onChange={(e)=>setFabric(e.target.value)}
-                >
-                  {FABRICS.map(f => <option key={f}>{f}</option>)}
-                </select>
-                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-[#8C867E]">↓</div>
-              </div>
-            </section>
-            
-            <section>
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E] mb-3 block">Embroidery</label>
-              <div className="relative group">
-                <select 
-                  className="w-full bg-white border border-[#E3D9C6]/40 rounded-2xl px-5 py-4 text-sm font-bold appearance-none outline-none focus:border-[#B19470] text-[#2D2926] shadow-sm transition-all" 
-                  value={embroidery} 
-                  onChange={(e)=>setEmbroidery(e.target.value)}
-                >
-                  {EMBROIDERY_STYLES.map(s => <option key={s}>{s}</option>)}
-                </select>
-                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-[#8C867E]">↓</div>
-              </div>
-            </section>
-          </div>
-
-          <section>
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E] mb-5 block flex items-center gap-2">
-              <Palette size={14} className="text-[#B19470]"/> Custom Shade Selector
-            </label>
-            <div className="flex flex-col md:flex-row items-center gap-6 bg-white/50 backdrop-blur-sm p-6 rounded-[2rem] border border-[#E3D9C6]/30">
-              <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* FABRIC SECTION */}
+            <section className="space-y-4">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E] block">1. Fabric & Color</label>
+              <select 
+                className="w-full bg-white border border-[#E3D9C6]/40 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-[#B19470] text-[#2D2926] shadow-sm" 
+                value={fabric} 
+                onChange={(e)=>setFabric(e.target.value)}
+              >
+                {FABRICS.map(f => <option key={f}>{f}</option>)}
+              </select>
+              <div className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-[#E3D9C6]/20">
                 <input 
                   type="color" 
                   value={color} 
                   onChange={(e) => setColor(e.target.value)}
-                  className="w-24 h-24 rounded-full border-4 border-white shadow-xl cursor-pointer appearance-none bg-transparent [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-full [&::-webkit-color-swatch]:border-none"
+                  className="w-12 h-12 rounded-lg cursor-pointer appearance-none bg-transparent [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-none"
                 />
+                <code className="text-[10px] font-black text-[#2D2926]">{color.toUpperCase()}</code>
               </div>
-              <div className="flex-grow space-y-3 w-full">
-                <p className="text-[10px] font-black uppercase text-[#8C867E] tracking-widest">Hex Value</p>
-                <code className="block bg-white px-4 py-3 rounded-xl border border-[#E3D9C6]/20 font-mono text-sm font-black text-[#2D2926] text-center shadow-sm">
-                  {color.toUpperCase()}
-                </code>
+            </section>
+            
+            {/* EMBROIDERY SECTION */}
+            <section className="space-y-4">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E] block">2. Embroidery & Shade</label>
+              <select 
+                className="w-full bg-white border border-[#E3D9C6]/40 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-[#B19470] text-[#2D2926] shadow-sm" 
+                value={embroidery} 
+                onChange={(e)=>setEmbroidery(e.target.value)}
+              >
+                {EMBROIDERY_STYLES.map(s => <option key={s}>{s}</option>)}
+              </select>
+              <div className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-[#E3D9C6]/20">
                 <input 
-                  type="text" 
-                  placeholder="Or shade name" 
-                  className="w-full bg-white border border-[#E3D9C6]/20 rounded-xl px-4 py-3 text-[11px] font-bold outline-none focus:border-[#B19470] text-[#2D2926] shadow-sm" 
-                  value={color} 
-                  onChange={(e)=>setColor(e.target.value)} 
+                  type="color" 
+                  value={embroideryColor} 
+                  onChange={(e) => setEmbroideryColor(e.target.value)}
+                  className="w-12 h-12 rounded-lg cursor-pointer appearance-none bg-transparent [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-none"
                 />
+                <code className="text-[10px] font-black text-[#2D2926]">{embroideryColor.toUpperCase()}</code>
               </div>
-            </div>
-          </section>
+            </section>
+          </div>
 
           <section className="pt-8 border-t border-[#E3D9C6]/30">
             <div className="flex justify-between items-center mb-5">
@@ -257,7 +237,6 @@ export default function Page() {
         </div>
       </main>
 
-      {/* FOOTER: Pearlescent Ivory Theme */}
       <footer className="bg-[#FAF9F6] border-t border-[#E3D9C6]/30 py-12 px-8 mt-auto">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <span className="font-serif text-xl italic tracking-[0.2em] font-black uppercase text-[#2D2926]">
@@ -279,7 +258,6 @@ export default function Page() {
         </div>
       </footer>
 
-      {/* MODALS (STORY & CART) */}
       <AnimatePresence>
         {showStory && (
           <>
@@ -322,7 +300,7 @@ export default function Page() {
                         <h4 className="font-black text-sm uppercase">{item.category}</h4>
                         <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-neutral-300 hover:text-red-500"><Trash2 size={16}/></button>
                       </div>
-                      <p className="text-[11px] font-bold text-neutral-400 uppercase">{item.fabric} • {item.embroidery} • {item.color}</p>
+                      <p className="text-[11px] font-bold text-neutral-400 uppercase">{item.fabric} ({item.color}) • {item.embroidery} ({item.embroideryColor})</p>
                       <p className="text-[11px] font-mono mt-1 text-black font-black">{item.sizeOrMeasurements}</p>
                     </div>
                   ))
