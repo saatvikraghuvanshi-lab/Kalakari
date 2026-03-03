@@ -58,6 +58,7 @@ export default function Page() {
   const [embroidery, setEmbroidery] = useState(EMBROIDERY_STYLES[0]);
   const [color, setColor] = useState('');
   const [selectedSize, setSelectedSize] = useState<string>('M');
+  const [notes, setNotes] = useState('');
   const [measurements, setMeasurements] = useState({
     bust: '',
     waist: '',
@@ -92,6 +93,7 @@ export default function Page() {
 • Fabric: ${fabric}
 • Embroidery: ${embroidery}
 ${sizeDetails}
+${notes ? `• Notes: ${notes}` : ''}
 
 _Please confirm if this is available for customization and shipping!_`;
 
@@ -128,10 +130,10 @@ _Please confirm if this is available for customization and shipping!_`;
         {isMenuOpen && (
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
             className="fixed inset-0 z-40 bg-white pt-24 px-8 flex flex-col gap-6 text-xl font-serif italic text-neutral-900">
-            <a href="#" onClick={() => setIsMenuOpen(false)}>Collections</a>
-            <a href="#" onClick={() => setIsMenuOpen(false)}>Bespoke</a>
-            <a href="#" onClick={() => setIsMenuOpen(false)}>Our Story</a>
-            <a href="#" onClick={() => setIsMenuOpen(false)}>Contact</a>
+            <a href="#collections" onClick={() => setIsMenuOpen(false)}>Collections</a>
+            <a href="#bespoke" onClick={() => setIsMenuOpen(false)}>Bespoke</a>
+            <a href="#story" onClick={() => setIsMenuOpen(false)}>Our Story</a>
+            <a href="#contact" onClick={() => setIsMenuOpen(false)}>Contact</a>
           </motion.div>
         )}
       </AnimatePresence>
@@ -149,10 +151,10 @@ _Please confirm if this is available for customization and shipping!_`;
           </motion.div>
 
           <div id="collections" className="grid grid-cols-2 gap-4">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="aspect-[3/4] rounded-2xl overflow-hidden bg-neutral-100">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="aspect-[3/4] rounded-2xl overflow-hidden bg-neutral-100 shadow-lg">
               <img src="https://cdn.cosmos.so/f93f0193-712e-47bf-a6f2-e1b3e03ab2c0?format=jpeg" alt="Saree Detail" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
             </motion.div>
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }} className="aspect-[3/4] rounded-2xl overflow-hidden bg-neutral-100 mt-8">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }} className="aspect-[3/4] rounded-2xl overflow-hidden bg-neutral-100 mt-8 shadow-lg">
               <img src="https://cdn.cosmos.so/63b79183-79ee-408e-b4c4-4d9be715dd2f?format=jpeg" alt="Lehnga Detail" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" /> 
             </motion.div>
           </div>
@@ -204,8 +206,8 @@ _Please confirm if this is available for customization and shipping!_`;
               </section>
             </div>
 
-            {/* SIZE LOGIC */}
-            {(['Dress', 'T-Shirt', 'Shirt'].includes(category)) && (
+            {/* SIZE LOGIC: Standard Sizes */}
+            {['Dress', 'T-Shirt', 'Shirt'].includes(category) && (
               <section className="animate-in fade-in slide-in-from-top-4 duration-700">
                 <label className="text-xs font-bold uppercase tracking-widest text-neutral-900 mb-4 block">Select Standard Size</label>
                 <div className="flex flex-wrap gap-3">
@@ -219,7 +221,8 @@ _Please confirm if this is available for customization and shipping!_`;
               </section>
             )}
 
-            {(['Scarf', 'Stole'].includes(category)) && (
+            {/* SIZE LOGIC: Free Size */}
+            {['Scarf', 'Stole'].includes(category) && (
               <div className="p-6 bg-neutral-50 rounded-2xl border border-dashed border-neutral-200 text-center animate-in zoom-in duration-500">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Size Status</span>
                 <p className="text-sm text-neutral-900 font-medium mt-1">One Size / Free Size</p>
@@ -248,36 +251,76 @@ _Please confirm if this is available for customization and shipping!_`;
               </section>
             )}
 
-            {/* SIZE CHART TABLE */}
+            {/* ENHANCED SIZE GUIDE (Contextual) */}
             <AnimatePresence>
               {showSizeChart && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }} 
+                  animate={{ opacity: 1, height: 'auto' }} 
+                  exit={{ opacity: 0, height: 0 }} 
+                  className="overflow-hidden"
+                >
                   <div className="mt-4 p-6 bg-neutral-50 rounded-2xl border border-neutral-100">
-                    <h3 className="font-serif text-xl mb-4 text-neutral-900">Measurement Guide</h3>
-                    <table className="w-full text-left text-xs mb-4">
-                      <thead>
-                        <tr className="border-b border-neutral-200 text-neutral-400 uppercase tracking-tighter">
-                          <th className="py-2">Size</th><th>Bust</th><th>Waist</th><th>Hips</th>
-                        </tr>
-                      </thead>
-                      <tbody className="text-neutral-700 font-medium">
-                        <tr className="border-b border-neutral-100"><td className="py-2 font-bold uppercase">S</td><td>34</td><td>28</td><td>36</td></tr>
-                        <tr className="border-b border-neutral-100"><td className="py-2 font-bold uppercase">M</td><td>36</td><td>30</td><td>38</td></tr>
-                        <tr className="border-b border-neutral-100"><td className="py-2 font-bold uppercase">L</td><td>38</td><td>32</td><td>40</td></tr>
-                        <tr><td className="py-2 font-bold uppercase">XL</td><td>40</td><td>34</td><td>42</td></tr>
-                      </tbody>
-                    </table>
+                    {['Dress', 'T-Shirt', 'Shirt'].includes(category) ? (
+                      <>
+                        <h3 className="font-serif text-xl mb-2 text-neutral-900">Western Fit Guide</h3>
+                        <p className="text-[11px] text-neutral-500 mb-4 italic">Body measurements in inches.</p>
+                        <div className="overflow-x-auto mb-6">
+                          <table className="w-full text-left text-xs">
+                            <thead>
+                              <tr className="border-b border-neutral-200 text-neutral-400 uppercase">
+                                <th className="py-2">Size</th><th>Bust</th><th>Waist</th>
+                              </tr>
+                            </thead>
+                            <tbody className="text-neutral-700 font-medium">
+                              <tr className="border-b border-neutral-100"><td className="py-2 font-bold uppercase text-neutral-900">S</td><td>34</td><td>28</td></tr>
+                              <tr className="border-b border-neutral-100"><td className="py-2 font-bold uppercase text-neutral-900">M</td><td>36</td><td>30</td></tr>
+                              <tr className="border-b border-neutral-100"><td className="py-2 font-bold uppercase text-neutral-900">L</td><td>38</td><td>32</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl border border-neutral-200 text-[11px] text-neutral-600">
+                          • <strong>Bust:</strong> Measure around the fullest part of your chest. <br/>
+                          • <strong>Standard Length:</strong> Usually 24" for shirts, unless customized.
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className="font-serif text-xl mb-2 text-neutral-900">Custom Fit Guide</h3>
+                        <div className="bg-white p-4 rounded-xl border border-neutral-200">
+                          <span className="text-[10px] font-bold uppercase text-black block mb-2 underline decoration-neutral-200">Pro-Tips:</span>
+                          <ul className="text-[11px] text-neutral-600 space-y-2">
+                            <li>• <strong>Lehengas:</strong> Measure length from waist to floor <strong>with heels on</strong>.</li>
+                            <li>• <strong>Saree Blouse:</strong> Measure horizontally around the fullest part of the bust.</li>
+                            <li>• <strong>Waist:</strong> Measure at the exact point where you tie your lehenga skirt.</li>
+                          </ul>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* STYLE NOTES / SPECIAL INSTRUCTIONS */}
+            <section className="pt-4 border-t border-neutral-100">
+              <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-neutral-900 mb-3">
+                <Sparkles size={14} /> Style Notes & Customization
+              </label>
+              <textarea 
+                placeholder="e.g. Please make the neck deep V, add extra tassels, or mention your height..."
+                className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900 outline-none focus:border-black min-h-[100px] resize-none transition-all"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </section>
 
             {/* COLOR PALETTE */}
             <section className="pt-4 border-t border-neutral-100">
               <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-neutral-900 mb-4">
                 <Palette size={14} /> Color Selection
               </label>
-              <div className="space-y-4 mb-6 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar border-b border-neutral-100 pb-4">
+              <div className="space-y-4 mb-6 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar border-b border-neutral-100 pb-4 font-sans">
                 {['Metallic', 'Jewel', 'Earth', 'Pastel'].map((cat) => (
                   <div key={cat}>
                     <span className="text-[9px] uppercase tracking-tighter text-neutral-400 mb-2 block font-bold">{cat}</span>
@@ -302,7 +345,7 @@ _Please confirm if this is available for customization and shipping!_`;
 
             {/* Submit Button */}
             <a href={generateWhatsAppLink()} target="_blank" rel="noopener noreferrer"
-              className="group relative flex items-center justify-center gap-3 w-full bg-black text-white py-5 rounded-2xl font-bold tracking-widest uppercase text-sm transition-all active:scale-[0.98]">
+              className="group relative flex items-center justify-center gap-3 w-full bg-black text-white py-5 rounded-2xl font-bold tracking-widest uppercase text-sm transition-all active:scale-[0.98] shadow-xl shadow-neutral-200">
               <MessageCircle size={18} className="group-hover:animate-bounce" />
               Place Order via WhatsApp
               <ChevronRight size={16} className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
@@ -315,9 +358,9 @@ _Please confirm if this is available for customization and shipping!_`;
       {/* Story & Footer */}
       <section id="story" className="py-24 bg-neutral-50 px-6 border-t border-neutral-100">
         <div className="max-w-3xl mx-auto text-center space-y-8">
-          <h2 className="font-serif text-4xl md:text-5xl text-neutral-900 tracking-tight">The Vision Behind <span className="italic">Kalakari</span></h2>
+          <h2 className="font-serif text-4xl md:text-5xl text-neutral-900 tracking-tight">The Vision Behind <span className="italic text-neutral-500">Kalakari</span></h2>
           <div className="space-y-6 text-neutral-600 leading-relaxed text-lg font-light">
-            <p>Founded by Chhaya, Kalakari is born from a passion for preserving the timeless artistry of Indian textiles.</p>
+            <p>Founded by Chhaya, Kalakari is born from a passion for preserving the timeless artistry of Indian textiles through modern silhouettes.</p>
           </div>
         </div>
       </section>
@@ -325,12 +368,12 @@ _Please confirm if this is available for customization and shipping!_`;
       <footer id="contact" className="bg-neutral-50 border-t border-neutral-100 py-12 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="text-center md:text-left">
-            <span className="font-serif text-xl tracking-widest text-neutral-900 italic block mb-2">KALAKARI</span>
+            <span className="font-serif text-xl tracking-widest text-neutral-900 italic block mb-2 uppercase">KALAKARI</span>
             <p className="text-xs text-neutral-400 tracking-widest uppercase">© 2024 Kalakari by Chhaya. All rights reserved.</p>
           </div>
           <div className="flex gap-6">
-            <a href="https://www.instagram.com/hajelachhaya?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="p-3 bg-white border border-neutral-100 rounded-full text-neutral-600 hover:text-black transition-colors"><Instagram size={20} /></a>
-            <a href="#" className="p-3 bg-white border border-neutral-100 rounded-full text-neutral-600 hover:text-black transition-colors"><Facebook size={20} /></a>
+            <a href="https://www.instagram.com/hajelachhaya" target="_blank" rel="noopener noreferrer" className="p-3 bg-white border border-neutral-100 rounded-full text-neutral-600 hover:text-black transition-colors shadow-sm"><Instagram size={20} /></a>
+            <a href="#" className="p-3 bg-white border border-neutral-100 rounded-full text-neutral-600 hover:text-black transition-colors shadow-sm"><Facebook size={20} /></a>
           </div>
           <div className="flex gap-8 text-[10px] uppercase tracking-[0.2em] font-bold text-neutral-500">
             <a href="#" className="hover:text-black">Privacy</a><a href="#" className="hover:text-black">Terms</a><a href="#" className="hover:text-black">Shipping</a>
