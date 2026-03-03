@@ -44,6 +44,7 @@ const BOUTIQUE_COLORS = [
 
 export default function Page() {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showStory, setShowStory] = useState(false); // Story Modal State
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [category, setCategory] = useState<typeof CATEGORIES[number]>('Saree');
   const [fabric, setFabric] = useState(FABRICS[0]);
@@ -79,12 +80,12 @@ export default function Page() {
       {/* HEADER */}
       <nav className="sticky top-0 z-50 bg-white border-b border-neutral-200 px-8 py-5 flex justify-between items-center shadow-sm">
         <div className="flex items-center gap-12">
-          <span className="font-serif text-2xl tracking-widest italic uppercase font-black">KALAKARI</span>
+          <span className="font-serif text-2xl tracking-widest italic uppercase font-black cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>KALAKARI</span>
           <div className="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-widest text-neutral-500">
             <a href="#" className="hover:text-black transition-colors">Collections</a>
             <a href="#" className="hover:text-black transition-colors">Bespoke</a>
-            <a href="#" className="hover:text-black transition-colors">Our Story</a>
-            <a href="#" className="hover:text-black transition-colors">Contact</a>
+            <button onClick={() => setShowStory(true)} className="hover:text-black transition-colors uppercase font-black">Our Story</button>
+            <a href="mailto:hello@kalakari.studio" className="hover:text-black transition-colors">Contact</a>
           </div>
         </div>
         <button onClick={() => setIsCartOpen(true)} className="relative p-2">
@@ -94,7 +95,6 @@ export default function Page() {
       </nav>
 
       <main className="max-w-7xl mx-auto w-full px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-16 flex-grow">
-        {/* LEFT SIDE: TITLES & IMAGES */}
         <div className="space-y-8">
           <h1 className="font-serif text-6xl md:text-8xl text-neutral-900 leading-[0.9] tracking-tighter">Your Boutique <br/><span className="italic text-neutral-300">Your Way.</span></h1>
           <div className="grid grid-cols-2 gap-4">
@@ -103,7 +103,6 @@ export default function Page() {
           </div>
         </div>
 
-        {/* RIGHT SIDE: CUSTOMIZER FORM */}
         <div className="bg-white rounded-[3rem] p-8 md:p-12 border border-neutral-100 shadow-2xl space-y-10">
           <div>
             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-5 block">Select Category</label>
@@ -212,15 +211,30 @@ export default function Page() {
             <a href="#" className="hover:text-black transition-colors">Terms</a>
           </div>
           <div className="flex gap-6">
-            <a href="#" className="p-3 bg-neutral-100 rounded-full hover:bg-black hover:text-white transition-all"><Instagram size={20}/></a>
-            <a href="#" className="p-3 bg-neutral-100 rounded-full hover:bg-black hover:text-white transition-all"><Facebook size={20}/></a>
+            <a href="https://instagram.com/kalakari.studio" target="_blank" rel="noopener noreferrer" className="p-3 bg-neutral-100 rounded-full hover:bg-black hover:text-white transition-all"><Instagram size={20}/></a>
+            <a href="https://facebook.com/kalakari" target="_blank" rel="noopener noreferrer" className="p-3 bg-neutral-100 rounded-full hover:bg-black hover:text-white transition-all"><Facebook size={20}/></a>
           </div>
         </div>
         <p className="text-center text-[9px] font-bold text-neutral-300 mt-8 tracking-[0.3em] uppercase">© 2026 KALAKARI STUDIO. Jaipur, India.</p>
       </footer>
 
-      {/* CART DRAWER */}
+      {/* MODALS: STORY & CART */}
       <AnimatePresence>
+        {showStory && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowStory(false)} className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[100]" />
+            <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }} className="fixed inset-0 m-auto w-[90%] max-w-2xl h-fit bg-white z-[110] p-12 rounded-[3rem] shadow-2xl overflow-y-auto max-h-[80vh]">
+              <button onClick={() => setShowStory(false)} className="absolute top-8 right-8 text-neutral-400 hover:text-black"><X size={24}/></button>
+              <h2 className="font-serif text-4xl italic mb-6">Our Story</h2>
+              <div className="space-y-4 text-neutral-600 leading-relaxed font-medium">
+                <p>Born in the heart of Jaipur, <strong>Kalakari</strong> is a tribute to the timeless artistry of Indian textiles. We believe that every garment tells a story—one of heritage, hand-pressed dyes, and the rhythmic song of the loom.</p>
+                <p>Our studio merges traditional craftsmanship like Zardosi and Aari work with modern silhouettes, allowing you to co-create pieces that aren't just worn, but cherished.</p>
+                <p className="italic font-serif text-xl pt-4">Artistry in every stitch, for the modern soul.</p>
+              </div>
+            </motion.div>
+          </>
+        )}
+
         {isCartOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCartOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60]" />
