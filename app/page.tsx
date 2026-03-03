@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ShoppingBag, MessageCircle, X, Trash2, Plus, Palette, Ruler, ChevronRight, Facebook, Instagram
+  ShoppingBag, MessageCircle, X, Trash2, Plus, Palette, Ruler, ChevronRight, Facebook, Instagram, User, MapPin
 } from 'lucide-react';
 
 // --- DATA ---
@@ -55,6 +55,15 @@ export default function Page() {
   const [measurements, setMeasurements] = useState({ bust: '', waist: '', hips: '', length: '' });
   const [cart, setCart] = useState<any[]>([]);
 
+  // NEW: CUSTOMER CREDENTIALS STATE
+  const [customerInfo, setCustomerInfo] = useState({
+    name: '',
+    email: '',
+    city: '',
+    address: '',
+    pincode: ''
+  });
+
   const addToCart = () => {
     let sizeInfo = ['Dress', 'T-Shirt', 'Shirt'].includes(category) 
       ? `Size: ${selectedSize}` 
@@ -68,10 +77,21 @@ export default function Page() {
 
   const generateWhatsAppLink = () => {
     const phoneNumber = '917991464638';
-    let message = `✨ *NEW MULTI-ORDER - KALAKARI* ✨\n\n`;
+    
+    // NEW: Include Customer Credentials in the message
+    let message = `✨ *NEW ORDER - KALAKARI* ✨\n\n`;
+    message += `👤 *CUSTOMER DETAILS*\n`;
+    message += `• Name: ${customerInfo.name || 'Not provided'}\n`;
+    message += `• Email: ${customerInfo.email || 'Not provided'}\n`;
+    message += `• City: ${customerInfo.city || 'Not provided'}\n`;
+    message += `• Pin Code: ${customerInfo.pincode || 'Not provided'}\n`;
+    message += `• Address: ${customerInfo.address || 'Not provided'}\n\n`;
+    
+    message += `🛍️ *ORDER SUMMARY*\n`;
     cart.forEach((item, index) => {
       message += `*ITEM ${index + 1}: ${item.category.toUpperCase()}*\n• Fabric: ${item.fabric}\n• Embroidery: ${item.embroidery}\n• Color: ${item.color}\n• ${item.sizeOrMeasurements}\n${item.notes ? `• Note: ${item.notes}\n` : ''}--------------------------\n`;
     });
+    
     return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
   };
 
@@ -85,7 +105,6 @@ export default function Page() {
             <a href="#" className="hover:text-black transition-colors">Collections</a>
             <a href="#" className="hover:text-black transition-colors">Bespoke</a>
             <button onClick={() => setShowStory(true)} className="hover:text-black transition-colors uppercase font-black">Our Story</button>
-            {/* UPDATED CONTACT LINK */}
             <a href="mailto:chhayahajela167@gmail.com" className="hover:text-black transition-colors">Contact</a>
           </div>
         </div>
@@ -96,6 +115,7 @@ export default function Page() {
       </nav>
 
       <main className="max-w-7xl mx-auto w-full px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-16 flex-grow">
+        {/* LEFT SIDE: TITLES & IMAGES */}
         <div className="space-y-8">
           <h1 className="font-serif text-6xl md:text-8xl text-neutral-900 leading-[0.9] tracking-tighter">Your Boutique <br/><span className="italic text-neutral-300">Your Way.</span></h1>
           <div className="grid grid-cols-2 gap-4">
@@ -104,7 +124,9 @@ export default function Page() {
           </div>
         </div>
 
+        {/* RIGHT SIDE: CUSTOMIZER FORM */}
         <div className="bg-white rounded-[3rem] p-8 md:p-12 border border-neutral-100 shadow-2xl space-y-10">
+          {/* CATEGORY SELECT */}
           <div>
             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-5 block">Select Category</label>
             <div className="flex flex-wrap gap-2">
@@ -212,12 +234,9 @@ export default function Page() {
             <a href="#" className="hover:text-black transition-colors">Terms</a>
           </div>
           <div className="flex gap-6">
-            {/* Instagram Link */}
             <a href="https://www.instagram.com/hajelachhaya?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="p-3 bg-neutral-100 rounded-full hover:bg-black hover:text-white transition-all">
               <Instagram size={20}/>
             </a>
-
-            {/* UPDATED FACEBOOK LINK */}
             <a href="https://www.facebook.com/share/1CcqEsncpY/" target="_blank" rel="noopener noreferrer" className="p-3 bg-neutral-100 rounded-full hover:bg-black hover:text-white transition-all">
               <Facebook size={20}/>
             </a>
@@ -251,7 +270,22 @@ export default function Page() {
                 <h2 className="font-serif text-2xl italic tracking-widest uppercase">Bag ({cart.length})</h2>
                 <button onClick={() => setIsCartOpen(false)} className="hover:rotate-90 transition-transform duration-300"><X size={28}/></button>
               </div>
+
               <div className="flex-grow overflow-y-auto space-y-8 pr-2 custom-scrollbar">
+                {/* CHECKOUT FORM - CREDENTIALS */}
+                {cart.length > 0 && (
+                  <div className="bg-neutral-50 p-6 rounded-3xl space-y-4 mb-8">
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-neutral-400 flex items-center gap-2 mb-2"><User size={14}/> Delivery Details</h3>
+                    <input type="text" placeholder="Full Name" className="w-full bg-white border border-neutral-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-black" value={customerInfo.name} onChange={(e)=>setCustomerInfo({...customerInfo, name: e.target.value})} />
+                    <input type="email" placeholder="Gmail Address" className="w-full bg-white border border-neutral-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-black" value={customerInfo.email} onChange={(e)=>setCustomerInfo({...customerInfo, email: e.target.value})} />
+                    <div className="grid grid-cols-2 gap-3">
+                       <input type="text" placeholder="City" className="w-full bg-white border border-neutral-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-black" value={customerInfo.city} onChange={(e)=>setCustomerInfo({...customerInfo, city: e.target.value})} />
+                       <input type="text" placeholder="Pin Code" className="w-full bg-white border border-neutral-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-black" value={customerInfo.pincode} onChange={(e)=>setCustomerInfo({...customerInfo, pincode: e.target.value})} />
+                    </div>
+                    <textarea placeholder="Complete Shipping Address" className="w-full bg-white border border-neutral-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-black min-h-[80px]" value={customerInfo.address} onChange={(e)=>setCustomerInfo({...customerInfo, address: e.target.value})} />
+                  </div>
+                )}
+
                 {cart.length === 0 ? (
                   <p className="text-center text-[10px] font-black uppercase text-neutral-300 tracking-[0.2em] py-20">Your bag is empty</p>
                 ) : (
@@ -267,10 +301,20 @@ export default function Page() {
                   ))
                 )}
               </div>
+
               {cart.length > 0 && (
-                <a href={generateWhatsAppLink()} target="_blank" rel="noopener noreferrer" className="w-full bg-black text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] mt-8 flex items-center justify-center gap-3 shadow-xl active:scale-[0.98] transition-transform">
+                <button 
+                  onClick={() => {
+                    if(!customerInfo.name || !customerInfo.address) {
+                      alert("Please fill in your Name and Address first!");
+                      return;
+                    }
+                    window.open(generateWhatsAppLink(), '_blank');
+                  }} 
+                  className="w-full bg-black text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] mt-8 flex items-center justify-center gap-3 shadow-xl active:scale-[0.98] transition-transform"
+                >
                   <MessageCircle size={18}/> Place via WhatsApp
-                </a>
+                </button>
               )}
             </motion.div>
           </>
