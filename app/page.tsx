@@ -81,20 +81,44 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 flex flex-col">
-      {/* HEADER */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-neutral-200 px-8 py-5 flex justify-between items-center shadow-sm">
+      {/* HEADER: Pearlescent Ivory Theme */}
+      <nav className="sticky top-0 z-50 bg-[#FAF9F6] border-b border-[#E3D9C6]/30 px-8 py-5 flex justify-between items-center shadow-sm backdrop-blur-md">
         <div className="flex items-center gap-12">
-          <span className="font-serif text-2xl tracking-widest italic uppercase font-black cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>KALAKARI</span>
-          <div className="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-widest text-neutral-500">
-            <a href="#" className="hover:text-black transition-colors">Collections</a>
-            <a href="#" className="hover:text-black transition-colors">Bespoke</a>
-            <button onClick={() => setShowStory(true)} className="hover:text-black transition-colors uppercase font-black">Our Story</button>
-            <a href="mailto:chhayahajela167@gmail.com" className="hover:text-black transition-colors">Contact</a>
+          <span 
+            className="font-serif text-2xl tracking-[0.15em] italic uppercase font-black cursor-pointer text-[#2D2926] hover:text-[#B19470] transition-all duration-500" 
+            onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
+          >
+            KALAKARI
+          </span>
+          <div className="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E]">
+            <a href="#" className="hover:text-[#2D2926] transition-colors relative group">
+              Collections
+              <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#B19470] transition-all duration-300 group-hover:w-full"></span>
+            </a>
+            <a href="#" className="hover:text-[#2D2926] transition-colors relative group">
+              Bespoke
+              <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#B19470] transition-all duration-300 group-hover:w-full"></span>
+            </a>
+            <button 
+              onClick={() => setShowStory(true)} 
+              className="hover:text-[#2D2926] transition-colors uppercase font-black relative group"
+            >
+              Our Story
+              <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#B19470] transition-all duration-300 group-hover:w-full"></span>
+            </button>
+            <a href="mailto:chhayahajela167@gmail.com" className="hover:text-[#2D2926] transition-colors relative group">
+              Contact
+              <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-[#B19470] transition-all duration-300 group-hover:w-full"></span>
+            </a>
           </div>
         </div>
-        <button onClick={() => setIsCartOpen(true)} className="relative p-2">
-          <ShoppingBag size={22} className="text-black" />
-          {cart.length > 0 && <span className="absolute -top-1 -right-1 bg-black text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center font-bold">{cart.length}</span>}
+        <button onClick={() => setIsCartOpen(true)} className="relative p-2 group">
+          <ShoppingBag size={22} className="text-[#2D2926] group-hover:text-[#B19470] transition-colors" />
+          {cart.length > 0 && (
+            <span className="absolute -top-1 -right-1 bg-[#B19470] text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-sm">
+              {cart.length}
+            </span>
+          )}
         </button>
       </nav>
 
