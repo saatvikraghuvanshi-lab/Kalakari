@@ -44,7 +44,7 @@ const BOUTIQUE_COLORS = [
 
 export default function Page() {
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showStory, setShowStory] = useState(false); // Story Modal State
+  const [showStory, setShowStory] = useState(false);
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [category, setCategory] = useState<typeof CATEGORIES[number]>('Saree');
   const [fabric, setFabric] = useState(FABRICS[0]);
@@ -85,7 +85,8 @@ export default function Page() {
             <a href="#" className="hover:text-black transition-colors">Collections</a>
             <a href="#" className="hover:text-black transition-colors">Bespoke</a>
             <button onClick={() => setShowStory(true)} className="hover:text-black transition-colors uppercase font-black">Our Story</button>
-            <a href="mailto:hello@kalakari.studio" className="hover:text-black transition-colors">Contact</a>
+            {/* UPDATED CONTACT LINK */}
+            <a href="mailto:chhayahajela167@gmail.com" className="hover:text-black transition-colors">Contact</a>
           </div>
         </div>
         <button onClick={() => setIsCartOpen(true)} className="relative p-2">
@@ -211,13 +212,18 @@ export default function Page() {
             <a href="#" className="hover:text-black transition-colors">Terms</a>
           </div>
           <div className="flex gap-6">
+            {/* Instagram Link */}
             <a href="https://www.instagram.com/hajelachhaya?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="p-3 bg-neutral-100 rounded-full hover:bg-black hover:text-white transition-all">
-    <Instagram size={20}/>
-  </a>
-            <a href="https://facebook.com/kalakari" target="_blank" rel="noopener noreferrer" className="p-3 bg-neutral-100 rounded-full hover:bg-black hover:text-white transition-all"><Facebook size={20}/></a>
+              <Instagram size={20}/>
+            </a>
+
+            {/* UPDATED FACEBOOK LINK */}
+            <a href="https://www.facebook.com/share/1CcqEsncpY/" target="_blank" rel="noopener noreferrer" className="p-3 bg-neutral-100 rounded-full hover:bg-black hover:text-white transition-all">
+              <Facebook size={20}/>
+            </a>
           </div>
         </div>
-        <p className="text-center text-[9px] font-bold text-neutral-300 mt-8 tracking-[0.3em] uppercase">© 2026 KALAKARI STUDIO. Jaipur, India.</p>
+        <p className="text-center text-[9px] font-bold text-neutral-300 mt-8 tracking-[0.3em] uppercase">© 2026 KALAKARI STUDIO.India.</p>
       </footer>
 
       {/* MODALS: STORY & CART */}
