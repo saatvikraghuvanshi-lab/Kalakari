@@ -211,7 +211,9 @@ export default function Page() {
             <a href="#" className="hover:text-black transition-colors">Terms</a>
           </div>
           <div className="flex gap-6">
-            <a href="https://instagram.com/kalakari.studio" target="_blank" rel="noopener noreferrer" className="p-3 bg-neutral-100 rounded-full hover:bg-black hover:text-white transition-all"><Instagram size={20}/></a>
+            <a href="https://www.instagram.com/hajelachhaya?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="p-3 bg-neutral-100 rounded-full hover:bg-black hover:text-white transition-all">
+    <Instagram size={20}/>
+  </a>
             <a href="https://facebook.com/kalakari" target="_blank" rel="noopener noreferrer" className="p-3 bg-neutral-100 rounded-full hover:bg-black hover:text-white transition-all"><Facebook size={20}/></a>
           </div>
         </div>
