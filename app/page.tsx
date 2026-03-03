@@ -216,8 +216,56 @@ export default function Page() {
         </div>
       </footer>
 
-      {/* BAG MODAL */}
+      {/* MODALS */}
       <AnimatePresence>
+        {showStory && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }} 
+              onClick={() => setShowStory(false)} 
+              className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100]" 
+            />
+            <motion.div 
+              initial={{ opacity: 0, y: 50, scale: 0.95 }} 
+              animate={{ opacity: 1, y: 0, scale: 1 }} 
+              exit={{ opacity: 0, y: 50, scale: 0.95 }} 
+              className="fixed inset-0 m-auto w-[90%] max-w-2xl h-fit bg-white z-[110] p-10 md:p-16 rounded-[3rem] shadow-2xl overflow-y-auto max-h-[85vh]"
+            >
+              <button onClick={() => setShowStory(false)} className="absolute top-8 right-8 text-neutral-300 hover:text-black hover:rotate-90 transition-all duration-300">
+                <X size={28}/>
+              </button>
+              
+              <div className="space-y-8 text-center md:text-left">
+                <h2 className="font-serif text-4xl md:text-5xl italic tracking-tight text-neutral-900 leading-tight">
+                  Curated by Heritage. <br/>
+                  <span className="text-neutral-300">Crafted for You.</span>
+                </h2>
+                
+                <div className="space-y-6 text-neutral-600 leading-[1.8] font-medium text-sm md:text-base">
+                  <p>
+                    At <strong className="text-black font-black uppercase tracking-widest text-xs">Kalakari</strong>, we bridge the gap between the master weaver’s courtyard and the modern woman’s wardrobe. Our studio is a sanctuary where Zardosi, Aari, and Gota Patti are reimagined for a new era.
+                  </p>
+                  <p>
+                    We don't just dress you; we invite you to be the <strong>architect of your own elegance.</strong> This is bespoke artistry, rooted in the soil of Rajasthan and refined for the world stage.
+                  </p>
+                  
+                  <div className="pt-8 border-t border-neutral-100 flex flex-col items-center md:items-start gap-4">
+                     <p className="font-serif text-xl italic text-neutral-400">Artistry in every stitch, for the modern soul.</p>
+                     <button 
+                       onClick={() => setShowStory(false)}
+                       className="mt-4 bg-black text-white px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-neutral-800 transition-all"
+                     >
+                       Explore the Studio
+                     </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+
         {isCartOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCartOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60]" />
