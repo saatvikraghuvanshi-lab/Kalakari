@@ -11,7 +11,6 @@ const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
 const FABRICS = ['Silk', 'Georgette', 'Organza', 'Chiffon', 'Crepe', 'Chanderi', 'Raw Silk', 'Cotton', 'Linen'];
 const EMBROIDERY_STYLES = ['Zardosi', 'Mirror Work', 'Thread Work', 'Gota Patti', 'Aari','Sequin','NONE'];
 
-// SAMPLE IMAGES (Cleaned up duplicates)
 const SAMPLE_IMAGES = [
   "https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg",
   "https://theloomstore.in/cdn/shop/files/IMG_5243.jpg?v=1698303816&width=1946",
@@ -25,6 +24,12 @@ export default function Page() {
   const [showStory, setShowStory] = useState(false);
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [showSamples, setShowSamples] = useState(false);
+  
+  // LEGAL & SUPPORT STATES
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
+
   const [category, setCategory] = useState<typeof CATEGORIES[number]>('Saree');
   const [fabric, setFabric] = useState(FABRICS[0]);
   const [embroidery, setEmbroidery] = useState(EMBROIDERY_STYLES[0]);
@@ -152,8 +157,16 @@ export default function Page() {
 
       {/* FOOTER */}
       <footer className="bg-[#FAF9F6] border-t border-[#E3D9C6]/30 py-12 px-8 mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
           <span className="font-serif text-xl italic font-black uppercase text-[#2D2926]">KALAKARI</span>
+          
+          {/* UPDATED LEGAL & SUPPORT TABS */}
+          <div className="flex flex-wrap justify-center gap-8 text-[9px] font-black uppercase tracking-[0.2em] text-[#8C867E]">
+            <button onClick={() => setShowTerms(true)} className="hover:text-[#2D2926] transition-colors">Terms & Conditions</button>
+            <button onClick={() => setShowPrivacy(true)} className="hover:text-[#2D2926] transition-colors">Privacy Policy</button>
+            <button onClick={() => setShowSupport(true)} className="hover:text-[#2D2926] transition-colors">Customer Support</button>
+          </div>
+
           <div className="flex gap-6">
             <a href="https://www.instagram.com/hajelachhaya" target="_blank" className="p-3 bg-white border border-[#E3D9C6]/20 rounded-full text-[#8C867E] hover:bg-black hover:text-white transition-all"><Instagram size={20}/></a>
             <a href="https://www.facebook.com/share/1CcqEsncpY/" target="_blank" className="p-3 bg-white border border-[#E3D9C6]/20 rounded-full text-[#8C867E] hover:bg-black hover:text-white transition-all"><Facebook size={20}/></a>
@@ -163,6 +176,40 @@ export default function Page() {
 
       {/* OVERLAYS & MODALS */}
       <AnimatePresence>
+        {/* CUSTOMER SUPPORT MODAL */}
+        {showSupport && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowSupport(false)} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[150]" />
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed inset-0 m-auto w-[90%] max-w-md h-fit bg-white z-[160] p-12 rounded-[3rem] shadow-2xl">
+              <button onClick={() => setShowSupport(false)} className="absolute top-8 right-8 text-neutral-300 hover:text-black"><X size={28}/></button>
+              <h2 className="font-serif text-3xl italic mb-8 uppercase tracking-tight text-center">Contact Support</h2>
+              
+              <div className="space-y-4">
+                {[
+                  { role: "Owner", phone: "917991464638" },
+                  { role: "Design Manager", phone: "919589120141" },
+                  { role: "Core Developer", phone: "919301661150" }
+                ].map((contact) => (
+                  <a 
+                    key={contact.phone}
+                    href={`https://wa.me/${contact.phone}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between p-5 bg-[#FAF9F6] border border-[#E3D9C6]/30 rounded-2xl hover:bg-[#2D2926] hover:text-white transition-all group"
+                  >
+                    <div>
+                      <p className="text-[8px] font-black uppercase tracking-widest text-[#8C867E] group-hover:text-neutral-400 mb-1">{contact.role}</p>
+                      <p className="text-xs font-bold uppercase tracking-wider">{contact.phone.replace('91', '+91 ')}</p>
+                    </div>
+                    <MessageCircle size={18} className="text-[#B19470]" />
+                  </a>
+                ))}
+              </div>
+              <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#8C867E] mt-8 text-center italic">Response time: Within 24 Hours</p>
+            </motion.div>
+          </>
+        )}
+
         {/* SAMPLES MODAL */}
         {showSamples && (
           <>
@@ -179,6 +226,38 @@ export default function Page() {
                     <img src={img} className="w-full rounded-2xl shadow-lg border border-neutral-100" alt={`Sample ${idx}`} />
                   </motion.div>
                 ))}
+              </div>
+            </motion.div>
+          </>
+        )}
+
+        {/* TERMS & CONDITIONS MODAL */}
+        {showTerms && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowTerms(false)} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[150]" />
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed inset-0 m-auto w-[90%] max-w-2xl h-fit max-h-[80vh] bg-white z-[160] p-12 rounded-[3rem] shadow-2xl overflow-y-auto">
+              <button onClick={() => setShowTerms(false)} className="absolute top-8 right-8 text-neutral-300 hover:text-black"><X size={28}/></button>
+              <h2 className="font-serif text-3xl italic mb-6 uppercase tracking-tight">Terms & Conditions</h2>
+              <div className="text-[11px] font-bold text-neutral-600 leading-[1.8] uppercase tracking-wider space-y-4">
+                <p>1. <span className="text-black">Customization:</span> As each piece is handcrafted to your specific measurements, orders cannot be cancelled once production begins.</p>
+                <p>2. <span className="text-black">Handmade Nature:</span> Variations in embroidery and texture are hallmarks of authentic hand-craftsmanship.</p>
+                <p>3. <span className="text-black">Lead Time:</span> Standard production takes 3–6 weeks. Shipping dates are estimates.</p>
+              </div>
+            </motion.div>
+          </>
+        )}
+
+        {/* PRIVACY POLICY MODAL */}
+        {showPrivacy && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowPrivacy(false)} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[150]" />
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed inset-0 m-auto w-[90%] max-w-2xl h-fit max-h-[80vh] bg-white z-[160] p-12 rounded-[3rem] shadow-2xl overflow-y-auto">
+              <button onClick={() => setShowPrivacy(false)} className="absolute top-8 right-8 text-neutral-300 hover:text-black"><X size={28}/></button>
+              <h2 className="font-serif text-3xl italic mb-6 uppercase tracking-tight">Privacy Policy</h2>
+              <div className="text-[11px] font-bold text-neutral-600 leading-[1.8] uppercase tracking-wider space-y-4">
+                <p>1. <span className="text-black">Data Collection:</span> We collect your details solely to process your bespoke order.</p>
+                <p>2. <span className="text-black">Third Parties:</span> We never sell your personal contact details to third-party advertisers.</p>
+                <p>3. <span className="text-black">Security:</span> All data shared is handled with end-to-end encryption for your safety.</p>
               </div>
             </motion.div>
           </>
