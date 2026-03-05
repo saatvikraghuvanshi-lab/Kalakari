@@ -1,375 +1,383 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ShoppingBag, Heart, User, X, Instagram, Facebook, 
-  ChevronRight, MessageCircle, Ruler, Scissors, ArrowLeft, Trash2, Check 
+  ShoppingBag, User, Heart, X, Instagram, Facebook, 
+  MessageCircle, Ruler, ShieldCheck, FileText, Headphones, 
+  Trash2, ArrowLeft, ChevronRight, Droplets, Palette, Scissors
 } from 'lucide-react';
 
-// --- TYPES & INTERFACES ---
-interface Product {
+// --- 1. TYPES & INTERFACES (Fixes terminal 'never' errors) ---
+interface Measurements {
+  bust: string; waist: string; hips: string; length: string;
+}
+
+interface CustomConfig {
+  fabric: string;
+  fabricColor: string;
+  embroideryColor: string;
+  neckStyle: string;
+  measurements: Measurements;
+}
+
+interface CartItem {
   id: number;
+  name: string;
   category: string;
   fabric: string;
   color: string;
-  type: 'ready' | 'custom';
-  size?: string;
-  measurements?: { bust: string; waist: string; hips: string; sleeves: string; length: string; };
-  blouse?: { cut: string; buttons: string; };
+  price: string;
+  image: string;
+  type: 'bespoke' | 'ready';
+  config?: CustomConfig;
 }
 
-interface UserProfile {
-  name: string;
-  email: string;
-  phone: string;
-}
+// --- 2. CONSTANTS & DATA ---
+const NAV_COLOR = "#E9E5CE";    // Top Tab Shade
+const FOOTER_COLOR = "#F7F2D1"; // Bottom Tab Shade
 
-// --- CONSTANTS ---
-const SAMPLE_IMAGES = [
-  "https://cdn.cosmos.so/d87eaebb-5652-4e0c-8ec4-7214d4d45097?format=jpeg",
-  "https://cdn.cosmos.so/c236e60f-4d49-46cc-a98e-ee06d0e845d8?format=jpeg",
-  "https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg"
+const FABRIC_COLORS = [
+  { name: 'Champagne', hex: '#F7E7CE' },
+  { name: 'Midnight', hex: '#191970' },
+  { name: 'Emerald', hex: '#50C878' },
+  { name: 'Ruby', hex: '#E0115F' },
+  { name: 'Ivory', hex: '#FFFFF0' }
 ];
 
-const FABRICS = ['Silk', 'Georgette', 'Organza', 'Chiffon', 'Chanderi', 'Raw Silk', 'Cotton'];
-const COLORS = ['Champagne Gold', 'Midnight Blue', 'Emerald Green', 'Ruby Red', 'Ivory'];
+const THREAD_COLORS = [
+  { name: 'Antique Gold', hex: '#CFB53B' },
+  { name: 'Silver Zari', hex: '#C0C0C0' },
+  { name: 'Rose Gold', hex: '#B76E79' },
+  { name: 'Tone-on-Tone', hex: 'transparent' }
+];
 
+const TEAM = [
+  { name: "Chhaya Hajela", role: "Owner", phone: "917991464638" },
+  { name: "Design Team", role: "Design Manager", phone: "919589120141" },
+  { name: "Tech Support", role: "Core Developer", phone: "919301661150" }
+];
+
+// --- 3. MAIN COMPONENT ---
 export default function KalakariBoutique() {
-  // Navigation State: 'home' | 'custom' | 'readymade' | 'samples' | 'checkout'
-  const [view, setView] = useState<'home' | 'custom' | 'readymade' | 'samples' | 'checkout'>('home');
-  const [checkoutStep, setCheckoutStep] = useState<'contact' | 'address'>('contact');
+  const [view, setView] = useState<'home' | 'samples' | 'bespoke' | 'checkout'>('home');
+  const [modal, setModal] = useState<'T&C' | 'PrivacyPolicy' | 'CustomerSupport' | null>(null);
+  const [cart, setCart] = useState<CartItem[]>([]);
   
-  // App Data
-  const [cart, setCart] = useState<Product[]>([]);
-  const [wishlist, setWishlist] = useState<Product[]>([]);
-  const [user, setUser] = useState<UserProfile>({ name: '', email: '', phone: '' });
-  const [address, setAddress] = useState({ pincode: '', city: '', state: '', house: '' });
-
-  // UI States
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showUserModal, setShowUserModal] = useState(false);
-  const [showWishlist, setShowWishlist] = useState(false);
-  const [activeCategory, setActiveCategory] = useState('Saree');
-
-  // Bespoke Configurator Selection
-  const [selections, setSelections] = useState<Product>({
-    id: 0,
-    category: 'Saree',
-    fabric: 'Silk',
-    color: 'Champagne Gold',
-    type: 'custom',
-    measurements: { bust: '', waist: '', hips: '', sleeves: '', length: '' },
-    blouse: { cut: 'Round Cut', buttons: 'Back' }
+  // Bespoke Config State
+  const [config, setConfig] = useState<CustomConfig>({
+    fabric: 'Raw Silk',
+    fabricColor: '#F7E7CE',
+    embroideryColor: '#CFB53B',
+    neckStyle: 'Round Neck',
+    measurements: { bust: '', waist: '', hips: '', length: '' }
   });
 
-  // --- LOGIC HANDLERS ---
-  const handleWhatsAppCheckout = () => {
-    const whatsappNumber = "917991464638";
-    let msg = `*NEW ORDER - KALAKARI*\n\n`;
-    msg += `*CUSTOMER*\nName: ${user.name}\nPhone: ${user.phone}\nEmail: ${user.email}\n\n`;
-    msg += `*ADDRESS*\n${address.house}, ${address.city}, ${address.state} - ${address.pincode}\n\n`;
-    msg += `*ORDER DETAILS*\n`;
-    cart.forEach((item, i) => {
-      msg += `\n${i+1}. ${item.category} (${item.type})\n   Fabric: ${item.fabric}\n   Color: ${item.color}\n`;
-      if (item.type === 'custom') {
-        msg += `   Blouse: ${item.blouse?.cut}, Buttons: ${item.blouse?.buttons}\n`;
-      }
-    });
-    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`, '_blank');
+  // --- HELPERS ---
+  const addToCart = () => {
+    const newItem: CartItem = {
+      id: Date.now(),
+      name: `Bespoke ${config.fabric} Ensemble`,
+      category: "Bespoke",
+      fabric: config.fabric,
+      color: config.fabricColor,
+      price: "Price on Request",
+      image: "https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg",
+      type: 'bespoke',
+      config: config
+    };
+    setCart([...cart, newItem]);
+    setView('checkout');
   };
 
-  const addToCart = (product: Product) => {
-    setCart([...cart, { ...product, id: Date.now() }]);
-    setIsCartOpen(true);
-  };
-
-  const toggleWishlist = (product: Product) => {
-    if (wishlist.find(i => i.id === product.id)) {
-      setWishlist(wishlist.filter(i => i.id !== product.id));
-    } else {
-      setWishlist([...wishlist, { ...product, id: Date.now() }]);
-    }
+  const removeItem = (id: number) => {
+    setCart(cart.filter(item => item.id !== id));
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#2D2926] font-sans selection:bg-[#B19470] selection:text-white">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#2D2926] selection:bg-[#B19470] selection:text-white">
       
-      {/* --- NAVIGATION --- */}
-      <nav className="sticky top-0 z-[100] bg-white/90 backdrop-blur-md px-6 md:px-12 py-5 flex justify-between items-center border-b border-stone-100">
-        <div className="flex items-baseline gap-8">
-          <span onClick={() => setView('home')} className="font-serif text-2xl font-black italic tracking-tighter cursor-pointer">KALAKARI</span>
-          <div className="hidden md:flex gap-6 text-[10px] font-bold uppercase tracking-widest text-stone-400">
-            <div className="relative group">
-              <button className="hover:text-black italic lowercase font-sans">collections</button>
-              <div className="absolute top-full left-0 hidden group-hover:block bg-white shadow-xl p-4 min-w-[140px] rounded-xl border border-stone-50">
-                <button onClick={() => setView('readymade')} className="block w-full text-left py-2 hover:text-black">Ready-made</button>
-                <button onClick={() => setView('custom')} className="block w-full text-left py-2 hover:text-black">Bespoke</button>
-              </div>
-            </div>
-            <button onClick={() => setView('samples')} className="hover:text-black italic lowercase font-sans">samples</button>
-            <button className="hover:text-black italic lowercase font-sans">our story</button>
+      {/* TOP TAB NAVIGATION */}
+      <nav 
+        style={{ backgroundColor: NAV_COLOR }} 
+        className="sticky top-0 z-[100] px-6 md:px-12 py-5 flex justify-between items-center border-b border-stone-200 shadow-sm"
+      >
+        <div className="flex items-baseline gap-10">
+          <span onClick={() => setView('home')} className="font-serif text-2xl font-black italic tracking-tighter uppercase cursor-pointer">KALAKARI</span>
+          <div className="hidden md:flex gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-stone-600">
+            <button onClick={() => setView('samples')} className="hover:text-black transition-colors">Collections</button>
+            <button onClick={() => setView('bespoke')} className="hover:text-black transition-colors">Bespoke Studio</button>
+            <button className="hover:text-black transition-colors">Our Story</button>
           </div>
         </div>
-
-        <div className="flex items-center gap-5">
-          <User size={18} className="text-stone-400 hover:text-black cursor-pointer" onClick={() => setShowUserModal(true)} />
-          <div className="relative cursor-pointer" onClick={() => setShowWishlist(true)}>
-            <Heart size={18} className="text-stone-400 hover:text-black" />
-            {wishlist.length > 0 && <span className="absolute -top-1.5 -right-1.5 bg-[#B19470] text-white text-[7px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">{wishlist.length}</span>}
+        <div className="flex items-center gap-6">
+          <User size={18} className="text-stone-600 cursor-pointer hover:text-black" />
+          <Heart size={18} className="text-stone-600 cursor-pointer hover:text-black" />
+          <div className="relative cursor-pointer" onClick={() => setView('checkout')}>
+            <ShoppingBag size={20} />
+            {cart.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-black text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                {cart.length}
+              </span>
+            )}
           </div>
-          <button onClick={() => setIsCartOpen(true)} className="relative">
-            <ShoppingBag size={18} />
-            {cart.length > 0 && <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center">{cart.length}</span>}
-          </button>
         </div>
       </nav>
 
       <AnimatePresence mode="wait">
         
-        {/* VIEW: HOME */}
+        {/* --- HOME VIEW --- */}
         {view === 'home' && (
-          <motion.section key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="px-6 md:px-20 py-16 text-center">
-            <h1 className="font-serif text-5xl md:text-[100px] leading-tight tracking-tighter mb-12">
-              Your Boutique, <br/> <span className="italic text-stone-300 underline decoration-1">Your Way.</span>
-            </h1>
-            <div className="relative max-w-5xl mx-auto flex flex-col md:flex-row gap-4 items-center justify-center">
-              <img src={SAMPLE_IMAGES[0]} className="w-full md:w-1/2 h-[60vh] object-cover rounded-2xl shadow-xl" alt="Luxe 1" />
-              <img src={SAMPLE_IMAGES[1]} className="w-full md:w-1/3 h-[50vh] object-cover rounded-2xl shadow-xl md:mt-24" alt="Luxe 2" />
-              <button 
-                onClick={() => setView('custom')}
-                className="absolute bg-white text-black px-12 py-5 rounded-full font-bold uppercase text-xs tracking-widest shadow-2xl hover:bg-black hover:text-white transition-all transform hover:scale-105"
-              >
-                Shop Now
-              </button>
-            </div>
-          </motion.section>
-        )}
-
-        {/* VIEW: CUSTOMIZER */}
-        {view === 'custom' && (
-          <motion.section key="custom" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-2 gap-16">
-            <div className="space-y-10">
-              <div className="flex items-center gap-4">
-                <button onClick={() => setView('home')} className="p-2 hover:bg-stone-100 rounded-full"><ArrowLeft size={18}/></button>
-                <h2 className="font-serif text-4xl italic">Bespoke Designer</h2>
-              </div>
-              
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {['Saree', 'Lehenga', 'Kurta Set'].map(cat => (
-                  <button key={cat} onClick={() => {setActiveCategory(cat); setSelections({...selections, category: cat})}} className={`px-8 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all ${activeCategory === cat ? 'bg-black text-white' : 'bg-white border-stone-200 text-stone-400'}`}>
-                    {cat}
-                  </button>
-                ))}
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 block mb-4">Choice of Fabric</label>
-                <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-                  {FABRICS.map(f => (
-                    <button key={f} onClick={() => setSelections({...selections, fabric: f})} className={`py-3 rounded-xl text-[10px] font-bold border transition-all ${selections.fabric === f ? 'bg-stone-100 border-black' : 'border-stone-100'}`}>{f}</button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-stone-50 p-8 rounded-3xl space-y-6">
-                <div className="flex items-center gap-2 font-serif italic text-xl border-b border-stone-200 pb-4"><Ruler size={18}/> Measurement Guide</div>
-                <div className="grid grid-cols-2 gap-4">
-                  {['bust', 'waist', 'hips', 'sleeves', 'length'].map(m => (
-                    <div key={m}>
-                      <label className="text-[9px] font-bold uppercase text-stone-400 mb-1 block">{m}</label>
-                      <input type="number" placeholder="inches" className="w-full p-4 rounded-xl border-none shadow-sm text-sm outline-none focus:ring-1 focus:ring-black" onChange={(e) => setSelections({...selections, measurements: {...selections.measurements!, [m]: e.target.value}})} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 block"><Scissors size={14} className="inline mr-1"/> Tailoring Details</label>
-                <div className="grid grid-cols-2 gap-4">
-                  <select className="p-4 bg-white border border-stone-100 rounded-xl text-xs font-bold outline-none" onChange={(e) => setSelections({...selections, blouse: {...selections.blouse!, cut: e.target.value}})}>
-                    <option>Front Cut: Round</option>
-                    <option>Front Cut: V-Neck</option>
-                    <option>Front Cut: Sweetheart</option>
-                  </select>
-                  <select className="p-4 bg-white border border-stone-100 rounded-xl text-xs font-bold outline-none" onChange={(e) => setSelections({...selections, blouse: {...selections.blouse!, buttons: e.target.value}})}>
-                    <option>Buttons: Back</option>
-                    <option>Buttons: Front</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <button onClick={() => addToCart(selections)} className="flex-1 bg-black text-white py-6 rounded-2xl font-bold uppercase text-[10px] tracking-widest shadow-xl active:scale-95 transition-transform">Add to Bag</button>
-                <button onClick={() => toggleWishlist(selections)} className="p-6 bg-white border border-stone-100 rounded-2xl text-stone-300 hover:text-red-400 transition-colors"><Heart size={20}/></button>
-              </div>
+          <motion.section key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="max-w-7xl mx-auto px-6 py-16 flex flex-col items-center">
+            <div className="text-center mb-16">
+              <h1 className="font-serif text-[55px] md:text-[90px] italic leading-tight mb-4">Artistry in <br/>Every Stitch.</h1>
+              <p className="font-serif text-[11px] uppercase tracking-[0.5em] text-stone-400">Handcrafted in Lucknow, Delivered Globally.</p>
             </div>
             
-            <div className="hidden lg:block relative">
-               <img src={SAMPLE_IMAGES[2]} className="w-full h-[85vh] object-cover rounded-[3rem] shadow-2xl sticky top-32" alt="Preview" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-5xl mb-16 items-end">
+              <div className="rounded-[3rem] overflow-hidden shadow-2xl h-[65vh]">
+                <img src="https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg" className="w-full h-full object-cover" alt="Lucknowi Handwork" />
+              </div>
+              <div className="rounded-[3rem] overflow-hidden shadow-xl h-[50vh]">
+                <img src="https://media.samyakk.in/pub/media/catalog/product/h/o/hot-pink-mirror-embroidered-silk-designer-saree-with-contrast-v-neck-blouse-jf1678-a.jpg" className="w-full h-full object-cover" alt="Designer Saree" />
+              </div>
             </div>
+
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setView('bespoke')}
+              className="bg-black text-white px-24 py-6 rounded-full text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl hover:bg-[#B19470] transition-all"
+            >
+              Shop Now
+            </motion.button>
           </motion.section>
         )}
 
-        {/* VIEW: CHECKOUT */}
-        {view === 'checkout' && (
-          <motion.section key="checkout" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen grid lg:grid-cols-2">
-            <div className="bg-stone-50 p-12 md:p-20 border-r border-stone-200">
-              <span className="font-serif text-3xl font-black italic block mb-20">KALAKARI</span>
-              <div className="space-y-6">
-                <h3 className="text-[10px] font-black uppercase tracking-widest text-stone-400">Your Selection</h3>
-                {cart.map(item => (
-                  <div key={item.id} className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
-                    <div>
-                      <p className="font-bold text-sm uppercase">{item.category}</p>
-                      <p className="text-[10px] text-stone-400 uppercase">{item.fabric} • {item.color}</p>
-                    </div>
-                    <Trash2 size={16} className="text-stone-300 cursor-pointer" onClick={() => setCart(cart.filter(i => i.id !== item.id))} />
+        {/* --- BESPOKE STUDIO VIEW --- */}
+        {view === 'bespoke' && (
+          <motion.section key="bespoke" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-2 gap-20">
+            <div className="space-y-12">
+              <header>
+                <h2 className="font-serif text-5xl italic">Bespoke Studio</h2>
+                <p className="text-stone-400 text-[10px] uppercase tracking-widest mt-2 flex items-center gap-2">
+                  <Scissors size={14}/> Custom construction from Lucknow
+                </p>
+              </header>
+
+              {/* Fabric Picker */}
+              <div className="space-y-4">
+                <label className="text-[10px] font-black uppercase flex items-center gap-2 tracking-widest text-stone-500">
+                  <Droplets size={14} className="text-[#B19470]"/> Base Fabric Shade
+                </label>
+                <div className="flex flex-wrap gap-4">
+                  {FABRIC_COLORS.map(c => (
+                    <button 
+                      key={c.hex} 
+                      onClick={() => setConfig({...config, fabricColor: c.hex})} 
+                      className={`w-10 h-10 rounded-full border-2 transition-transform ${config.fabricColor === c.hex ? 'border-black scale-110' : 'border-transparent'}`} 
+                      style={{ backgroundColor: c.hex }} 
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Embroidery Picker */}
+              <div className="space-y-4">
+                <label className="text-[10px] font-black uppercase flex items-center gap-2 tracking-widest text-stone-500">
+                  <Palette size={14} className="text-[#B19470]"/> Embroidery Zari
+                </label>
+                <div className="flex flex-wrap gap-4">
+                  {THREAD_COLORS.map(c => (
+                    <button 
+                      key={c.name} 
+                      onClick={() => setConfig({...config, embroideryColor: c.hex})} 
+                      className={`w-10 h-10 rounded-full border-2 flex items-center justify-center transition-transform ${config.embroideryColor === c.hex ? 'border-black scale-110' : 'border-stone-200'}`} 
+                      style={{ backgroundColor: c.hex === 'transparent' ? '#fff' : c.hex }}
+                    >
+                      {c.hex === 'transparent' && <span className="text-[7px] font-bold">T-O-T</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Measurements */}
+              <div className="bg-stone-50 p-8 rounded-[2.5rem] grid grid-cols-2 gap-6">
+                {Object.keys(config.measurements).map((m) => (
+                  <div key={m}>
+                    <label className="text-[9px] font-bold uppercase text-stone-400 block mb-2">{m}</label>
+                    <input 
+                      type="text" 
+                      placeholder="inches" 
+                      className="w-full bg-white p-4 rounded-xl outline-none text-sm border border-stone-100 focus:border-black"
+                      onChange={(e) => setConfig({...config, measurements: {...config.measurements, [m as keyof Measurements]: e.target.value}})}
+                    />
                   </div>
                 ))}
               </div>
+
+              <button 
+                onClick={addToCart}
+                className="w-full bg-black text-white py-7 rounded-full font-black uppercase text-[11px] tracking-[0.4em] shadow-xl hover:bg-[#B19470] transition-colors"
+              >
+                Add to Selection
+              </button>
             </div>
 
-            <div className="p-12 md:p-20 bg-white">
-              <div className="max-w-md mx-auto h-full flex flex-col justify-center">
-                <div className="flex gap-4 mb-16 text-[10px] font-black uppercase tracking-widest items-center">
-                  <span className={checkoutStep === 'contact' ? 'text-black underline decoration-2' : 'text-stone-300'}>Contact</span>
-                  <ChevronRight size={12} className="text-stone-200"/>
-                  <span className={checkoutStep === 'address' ? 'text-black underline decoration-2' : 'text-stone-300'}>Address</span>
+            {/* Live Preview Column */}
+            <div className="relative">
+              <div className="sticky top-32">
+                <div className="rounded-[3.5rem] overflow-hidden shadow-2xl h-[75vh] bg-stone-100 relative">
+                  <div className="absolute inset-0 opacity-25 pointer-events-none transition-colors duration-500" style={{ backgroundColor: config.fabricColor }} />
+                  <img src="https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg" className="w-full h-full object-cover mix-blend-multiply" alt="Bespoke Preview" />
                 </div>
-
-                {checkoutStep === 'contact' ? (
-                  <div className="space-y-4">
-                    <div className="bg-stone-50 p-4 rounded-2xl">
-                      <label className="text-[9px] font-bold text-stone-400 uppercase">Full Name</label>
-                      <input type="text" placeholder="Ayesha Kapoor" className="w-full bg-transparent outline-none font-bold" value={user.name} onChange={(e)=>setUser({...user, name: e.target.value})} />
-                    </div>
-                    <div className="bg-stone-50 p-4 rounded-2xl">
-                      <label className="text-[9px] font-bold text-stone-400 uppercase">Email</label>
-                      <input type="email" placeholder="ayesha@email.com" className="w-full bg-transparent outline-none font-bold" value={user.email} onChange={(e)=>setUser({...user, email: e.target.value})} />
-                    </div>
-                    <div className="bg-stone-50 p-4 rounded-2xl">
-                      <label className="text-[9px] font-bold text-stone-400 uppercase">Mobile Number</label>
-                      <input type="tel" placeholder="+91" className="w-full bg-transparent outline-none font-bold" value={user.phone} onChange={(e)=>setUser({...user, phone: e.target.value})} />
-                    </div>
-                    <button onClick={() => setCheckoutStep('address')} className="w-full bg-black text-white py-6 rounded-2xl font-bold uppercase text-[10px] tracking-widest mt-8 shadow-xl">Continue to Shipping</button>
+                <div className="mt-6 flex justify-between items-center px-6">
+                  <div className="flex gap-2">
+                    <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: config.fabricColor }} />
+                    <div className="w-4 h-4 rounded-full shadow-sm border border-stone-200" style={{ backgroundColor: config.embroideryColor }} />
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    <button onClick={() => setCheckoutStep('contact')} className="flex items-center gap-2 text-[10px] font-black text-stone-300 uppercase mb-4 hover:text-black transition-colors"><ArrowLeft size={14}/> Change Details</button>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-stone-50 p-4 rounded-2xl">
-                        <label className="text-[9px] font-bold text-stone-400 uppercase">Pincode</label>
-                        <input type="text" className="w-full bg-transparent outline-none font-bold" onChange={(e)=>setAddress({...address, pincode: e.target.value})} />
-                      </div>
-                      <div className="bg-stone-50 p-4 rounded-2xl">
-                        <label className="text-[9px] font-bold text-stone-400 uppercase">City</label>
-                        <input type="text" className="w-full bg-transparent outline-none font-bold" onChange={(e)=>setAddress({...address, city: e.target.value})} />
-                      </div>
-                    </div>
-                    <div className="bg-stone-50 p-4 rounded-2xl">
-                      <label className="text-[9px] font-bold text-stone-400 uppercase">House Address</label>
-                      <textarea rows={3} className="w-full bg-transparent outline-none font-bold resize-none" onChange={(e)=>setAddress({...address, house: e.target.value})} />
-                    </div>
-                    <button onClick={handleWhatsAppCheckout} className="w-full bg-green-600 text-white py-6 rounded-2xl font-bold uppercase text-[10px] tracking-widest mt-8 flex items-center justify-center gap-3 shadow-xl hover:bg-green-700 transition-colors">
-                      <MessageCircle size={18}/> Pay & Order via WhatsApp
-                    </button>
-                  </div>
-                )}
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-stone-300">Lucknow Studio Preview</span>
+                </div>
               </div>
             </div>
           </motion.section>
         )}
 
+        {/* --- 30/70 CHECKOUT VIEW --- */}
+        {view === 'checkout' && (
+          <motion.section key="checkout" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen flex flex-col md:flex-row">
+            {/* 30% LEFT: SUMMARY */}
+            <div className="w-full md:w-[30%] bg-stone-50/80 p-10 md:p-14 border-r border-stone-200">
+              <button onClick={() => setView('home')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-stone-400 mb-12 hover:text-black">
+                <ArrowLeft size={14} /> Studio
+              </button>
+              <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-stone-300 mb-8">Your Selection</h3>
+              <div className="space-y-6">
+                {cart.map(item => (
+                  <div key={item.id} className="bg-white p-5 rounded-2xl shadow-sm flex gap-5 items-center group relative">
+                    <img src={item.image} className="w-16 h-16 object-cover rounded-xl" alt="Cart Item" />
+                    <div>
+                      <p className="font-serif italic text-lg">{item.category}</p>
+                      <p className="text-[9px] uppercase text-stone-400 tracking-tighter">{item.fabric} • Custom Fit</p>
+                    </div>
+                    <button onClick={() => removeItem(item.id)} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-stone-300 hover:text-red-500 transition-all">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+                {cart.length === 0 && <p className="italic text-stone-400 text-sm">Your bag is empty.</p>}
+              </div>
+            </div>
+
+            {/* 70% RIGHT: FORMS */}
+            <div className="w-full md:w-[70%] bg-white p-10 md:p-32 flex flex-col items-center">
+              <div className="w-full max-w-xl">
+                <div className="flex gap-6 mb-16 items-center">
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] border-b-2 border-black pb-1">Contact</span>
+                  <ChevronRight size={14} className="text-stone-200" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-200">Shipping</span>
+                </div>
+                
+                <div className="space-y-8">
+                  <div className="space-y-5">
+                    <input type="text" placeholder="Full Name" className="w-full bg-stone-50 p-6 rounded-2xl outline-none text-sm focus:ring-1 focus:ring-black transition-all" />
+                    <input type="email" placeholder="Email Address" className="w-full bg-stone-50 p-6 rounded-2xl outline-none text-sm focus:ring-1 focus:ring-black transition-all" />
+                    <div className="flex gap-3">
+                      <div className="bg-stone-50 p-6 rounded-2xl text-sm font-bold text-stone-400">+91</div>
+                      <input type="tel" placeholder="Mobile" className="flex-1 bg-stone-50 p-6 rounded-2xl outline-none text-sm focus:ring-1 focus:ring-black transition-all" />
+                    </div>
+                    <textarea placeholder="Complete Delivery Address" className="w-full bg-stone-50 p-6 rounded-2xl outline-none text-sm h-32 resize-none focus:ring-1 focus:ring-black transition-all" />
+                  </div>
+
+                  <button 
+                    onClick={() => window.open(`https://wa.me/917991464638?text=Hello, I want to confirm my bespoke order for: ${cart.map(i => i.name).join(', ')}`, '_blank')}
+                    className="w-full bg-[#25D366] text-white py-7 rounded-2xl font-black uppercase text-[11px] tracking-[0.4em] shadow-2xl flex justify-center items-center gap-3 hover:bg-black transition-all"
+                  >
+                    <MessageCircle size={18} /> Order via WhatsApp
+                  </button>
+                  <p className="text-center text-[9px] uppercase tracking-widest text-stone-300 font-bold">Secure Global Delivery from Lucknow Studio</p>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+        )}
       </AnimatePresence>
 
-      {/* --- SIDEBARS & MODALS --- */}
+      {/* BOTTOM TAB FOOTER */}
+      <footer 
+        style={{ backgroundColor: FOOTER_COLOR }} 
+        className="mt-20 px-10 py-16 border-t border-stone-200/50"
+      >
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
+          
+          <div className="flex flex-wrap justify-center gap-10 text-[9px] font-black uppercase tracking-[0.3em] text-stone-500">
+            <button onClick={() => setModal('T&C')} className="hover:text-black transition-colors">Terms & Conditions</button>
+            <button onClick={() => setModal('PrivacyPolicy')} className="hover:text-black transition-colors">Privacy Policy</button>
+            <button onClick={() => setModal('CustomerSupport')} className="hover:text-[#B19470] transition-colors">Customer Support</button>
+          </div>
+          
+          <div className="flex gap-8">
+            <a href="https://instagram.com/hajelachhaya" target="_blank" rel="noreferrer" className="text-stone-400 hover:text-black transition-colors"><Instagram size={20} /></a>
+            <a href="https://facebook.com/chhaya.hajela" target="_blank" rel="noreferrer" className="text-stone-400 hover:text-blue-600 transition-colors"><Facebook size={20} /></a>
+          </div>
+        </div>
+        <div className="text-center mt-12 text-[8px] font-bold uppercase tracking-[0.5em] text-stone-300">
+          © 2026 Kalakari Boutique Lucknow
+        </div>
+      </footer>
+
+      {/* UNIFIED MODAL SYSTEM */}
       <AnimatePresence>
-        {isCartOpen && (
-          <div className="fixed inset-0 z-[200]">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCartOpen(false)} className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
-            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25 }} className="absolute right-0 top-0 h-full w-full max-w-md bg-white p-10 flex flex-col shadow-2xl">
-              <div className="flex justify-between items-center mb-12 border-b border-stone-100 pb-6">
-                <h2 className="font-serif text-3xl italic">The Bag ({cart.length})</h2>
-                <X className="cursor-pointer text-stone-300 hover:text-black" onClick={() => setIsCartOpen(false)} />
-              </div>
-              <div className="flex-grow overflow-y-auto space-y-4">
-                {cart.length === 0 ? (
-                  <div className="text-center text-stone-300 uppercase text-[9px] tracking-[0.2em] py-40">Your bag is empty</div>
-                ) : (
-                  cart.map(item => (
-                    <div key={item.id} className="flex justify-between items-center bg-stone-50 p-6 rounded-2xl border border-stone-100">
-                       <div>
-                         <p className="font-bold uppercase text-[10px] tracking-widest">{item.category}</p>
-                         <p className="text-[10px] text-stone-400">{item.fabric} • Custom Made</p>
-                       </div>
-                       <Trash2 size={16} className="text-stone-300 hover:text-red-400 cursor-pointer" onClick={() => setCart(cart.filter(i => i.id !== item.id))} />
-                    </div>
-                  ))
-                )}
-              </div>
-              {cart.length > 0 && (
-                <button onClick={() => {setView('checkout'); setIsCartOpen(false)}} className="w-full bg-black text-white py-6 rounded-2xl font-bold uppercase text-[10px] tracking-[0.3em] mt-8">Check out now</button>
-              )}
-            </motion.div>
-          </div>
-        )}
-
-        {showUserModal && (
+        {modal && (
           <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowUserModal(false)} className="absolute inset-0 bg-black/40 backdrop-blur-md" />
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-md p-12 rounded-[3rem] shadow-2xl">
-              <X className="absolute top-8 right-8 cursor-pointer text-stone-200 hover:text-black" onClick={() => setShowUserModal(false)} />
-              <h2 className="font-serif text-3xl italic mb-8">Identification</h2>
-              <div className="space-y-4">
-                <input type="text" placeholder="Full Name" className="w-full p-5 bg-stone-50 rounded-2xl outline-none text-sm" onChange={(e)=>setUser({...user, name: e.target.value})} />
-                <input type="email" placeholder="Email Address" className="w-full p-5 bg-stone-50 rounded-2xl outline-none text-sm" onChange={(e)=>setUser({...user, email: e.target.value})} />
-                <button className="w-full bg-black text-white py-5 rounded-2xl font-bold uppercase text-[10px] tracking-widest mt-4" onClick={()=>setShowUserModal(false)}>Save Identity</button>
-              </div>
-            </motion.div>
-          </div>
-        )}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setModal(null)} className="absolute inset-0 bg-black/40 backdrop-blur-md" />
+            <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 50, opacity: 0 }} className="relative bg-white w-full max-w-2xl p-12 rounded-[3.5rem] shadow-2xl overflow-y-auto max-h-[85vh]">
+              <X className="absolute top-8 right-8 cursor-pointer text-stone-300 hover:text-black" onClick={() => setModal(null)} />
+              
+              {modal === 'T&C' && (
+                <div className="prose prose-stone">
+                  <h2 className="font-serif text-3xl italic mb-6 flex items-center gap-3"><FileText className="text-[#B19470]"/> Terms & Conditions</h2>
+                  <div className="space-y-4 text-xs text-stone-500 leading-relaxed uppercase tracking-wider font-bold">
+                    <p>1. Bespoke garments are handcrafted to order. Once production begins, orders cannot be cancelled.</p>
+                    <p>2. Customers must provide accurate measurements. We are not liable for fitment issues from incorrect data.</p>
+                    <p>3. Colors may vary slightly due to hand-dyeing and screen calibrations.</p>
+                  </div>
+                </div>
+              )}
 
-        {showWishlist && (
-          <div className="fixed inset-0 z-[300] flex items-end md:items-center justify-center p-0 md:p-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setShowWishlist(false)} className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
-            <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className="relative bg-[#FDFBF7] w-full max-w-2xl p-10 rounded-t-[3rem] md:rounded-[3rem] shadow-2xl max-h-[80vh] overflow-y-auto">
-              <h2 className="font-serif text-3xl italic mb-10 flex items-center gap-2">Wishlist <Heart size={24} className="fill-red-400 text-red-400"/></h2>
-              {wishlist.length === 0 ? (
-                <p className="text-stone-300 py-10 uppercase text-[10px] tracking-widest text-center">No favorites yet</p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {wishlist.map(item => (
-                    <div key={item.id} className="bg-white p-6 rounded-3xl border border-stone-100 flex justify-between items-center">
-                       <p className="font-bold text-xs uppercase">{item.category}</p>
-                       <button onClick={() => addToCart(item)} className="p-3 bg-stone-50 rounded-full hover:bg-black hover:text-white transition-colors"><ShoppingBag size={14}/></button>
-                    </div>
-                  ))}
+              {modal === 'PrivacyPolicy' && (
+                <div className="prose prose-stone">
+                  <h2 className="font-serif text-3xl italic mb-6 flex items-center gap-3"><ShieldCheck className="text-[#B19470]"/> Privacy Policy</h2>
+                  <p className="text-xs text-stone-500 leading-relaxed uppercase tracking-wider font-bold">
+                    We only store your measurements and contact details for order fulfillment. Your data is encrypted and never shared with third parties, ensuring your privacy is as exclusive as our designs.
+                  </p>
+                </div>
+              )}
+
+              {modal === 'CustomerSupport' && (
+                <div className="space-y-6">
+                  <h2 className="font-serif text-3xl italic mb-8 flex items-center gap-3"><Headphones size={28} className="text-[#B19470]"/> Customer Support</h2>
+                  <div className="grid gap-4">
+                    {TEAM.map((member, idx) => (
+                      <div 
+                        key={idx} 
+                        className="group bg-stone-50 p-6 rounded-2xl flex justify-between items-center hover:bg-black transition-all cursor-pointer"
+                        onClick={() => window.open(`https://wa.me/${member.phone}`, '_blank')}
+                      >
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-[#B19470] mb-1">{member.role}</p>
+                          <p className="font-serif text-xl italic group-hover:text-white transition-colors">{member.name}</p>
+                        </div>
+                        <MessageCircle size={20} className="text-stone-300 group-hover:text-white" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-
-      {/* --- FOOTER --- */}
-      <footer className="mt-20 px-10 py-16 bg-white border-t border-stone-100">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
-          <div className="text-center md:text-left">
-            <div className="font-serif text-2xl font-black italic mb-4">KALAKARI</div>
-            <p className="text-stone-400 text-[10px] font-bold uppercase tracking-widest">Handcrafted in Rajasthan, Delivered Globally.</p>
-          </div>
-          <div className="flex gap-10 text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">
-            <button className="hover:text-black">Terms</button>
-            <button className="hover:text-black">Privacy</button>
-            <button className="hover:text-black">Support</button>
-          </div>
-          <div className="flex gap-4">
-            <a href="https://instagram.com/hajelachhaya" target="_blank" className="p-4 bg-stone-50 rounded-full hover:bg-black hover:text-white transition-all"><Instagram size={18}/></a>
-            <a href="#" className="p-4 bg-stone-50 rounded-full hover:bg-black hover:text-white transition-all"><Facebook size={18}/></a>
-          </div>
-        </div>
-      </footer>
 
     </div>
   );
