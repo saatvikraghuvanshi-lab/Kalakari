@@ -1,345 +1,376 @@
 'use client';
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ShoppingBag, MessageCircle, X, Trash2, Plus, Palette, Ruler, Facebook, Instagram, User, Phone, Mail, MapPin, Grid
+import { 
+  ShoppingBag, Heart, User, X, Instagram, Facebook, 
+  ChevronRight, MessageCircle, Ruler, Scissors, ArrowLeft, Trash2, Check 
 } from 'lucide-react';
 
-// --- DATA ---
-const CATEGORIES = ['Saree', 'Lehenga', 'Kurta Set', 'Dress', 'T-Shirt', 'Shirt', 'Scarf', 'Stole'] as const;
-const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
-const FABRICS = ['Silk', 'Georgette', 'Organza', 'Chiffon', 'Crepe', 'Chanderi', 'Raw Silk', 'Cotton', 'Linen'];
-const EMBROIDERY_STYLES = ['Zardosi', 'Mirror Work', 'Thread Work', 'Gota Patti', 'Aari','Sequin','NONE'];
+// --- TYPES & INTERFACES ---
+interface Product {
+  id: number;
+  category: string;
+  fabric: string;
+  color: string;
+  type: 'ready' | 'custom';
+  size?: string;
+  measurements?: { bust: string; waist: string; hips: string; sleeves: string; length: string; };
+  blouse?: { cut: string; buttons: string; };
+}
 
+interface UserProfile {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+// --- CONSTANTS ---
 const SAMPLE_IMAGES = [
-  "https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg",
-  "https://theloomstore.in/cdn/shop/files/IMG_5243.jpg?v=1698303816&width=1946",
-  "https://clothsvilla.com/cdn/shop/products/WhatsAppImage2022-04-02at2.31.50PM_3_1024x1024.jpg?v=1648890244",
-  "https://media.samyakk.in/pub/media/catalog/product/l/i/light-brown-sequins-work-saree-with-readymade-full-sleeves-blouse-gh6037-a.jpg",
-  "https://media.samyakk.in/pub/media/catalog/product/h/o/hot-pink-mirror-embroidered-silk-designer-saree-with-contrast-v-neck-blouse-jf1678-a.jpg",
   "https://cdn.cosmos.so/d87eaebb-5652-4e0c-8ec4-7214d4d45097?format=jpeg",
   "https://cdn.cosmos.so/c236e60f-4d49-46cc-a98e-ee06d0e845d8?format=jpeg",
-  "https://cdn.cosmos.so/c56cc03d-07bd-4cf6-90fa-d1cf07851f3c?format=jpeg",
-  "https://cdn.cosmos.so/d8e6098d-0e69-4fe9-b247-df846574c130?format=jpeg",
-  "https://itokri.com/cdn/shop/files/red-hand-natural-dyed-pure-cotton-stole-tassels-26-stoles-310.jpg?v=1770793113&width=480",
-  "https://itokri.com/cdn/shop/files/black-hand-natural-dyed-chanderi-silk-stole-tassels-13-stoles-182.jpg?v=1770738425&width=480"
+  "https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg"
 ];
 
-export default function Page() {
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showStory, setShowStory] = useState(false);
-  const [showSizeChart, setShowSizeChart] = useState(false);
-  const [showSamples, setShowSamples] = useState(false);
+const FABRICS = ['Silk', 'Georgette', 'Organza', 'Chiffon', 'Chanderi', 'Raw Silk', 'Cotton'];
+const COLORS = ['Champagne Gold', 'Midnight Blue', 'Emerald Green', 'Ruby Red', 'Ivory'];
+
+export default function KalakariBoutique() {
+  // Navigation State: 'home' | 'custom' | 'readymade' | 'samples' | 'checkout'
+  const [view, setView] = useState<'home' | 'custom' | 'readymade' | 'samples' | 'checkout'>('home');
+  const [checkoutStep, setCheckoutStep] = useState<'contact' | 'address'>('contact');
   
-  // LEGAL & SUPPORT STATES
-  const [showTerms, setShowTerms] = useState(false);
-  const [showPrivacy, setShowPrivacy] = useState(false);
-  const [showSupport, setShowSupport] = useState(false);
+  // App Data
+  const [cart, setCart] = useState<Product[]>([]);
+  const [wishlist, setWishlist] = useState<Product[]>([]);
+  const [user, setUser] = useState<UserProfile>({ name: '', email: '', phone: '' });
+  const [address, setAddress] = useState({ pincode: '', city: '', state: '', house: '' });
 
-  const [category, setCategory] = useState<typeof CATEGORIES[number]>('Saree');
-  const [fabric, setFabric] = useState(FABRICS[0]);
-  const [embroidery, setEmbroidery] = useState(EMBROIDERY_STYLES[0]);
-  const [color, setColor] = useState('#D4AF37');
-  const [embroideryColor, setEmbroideryColor] = useState('#FFFFFF');
-  const [selectedSize, setSelectedSize] = useState<string>('M');
-  const [notes, setNotes] = useState('');
-  const [measurements, setMeasurements] = useState({ bust: '', waist: '', hips: '', length: '' });
-  const [cart, setCart] = useState<any[]>([]);
-  const [customerInfo, setCustomerInfo] = useState({ name: '', number: '', gmail: '', city: '', address: '', pincode: '' });
+  // UI States
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [showWishlist, setShowWishlist] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('Saree');
 
-  const addToCart = () => {
-    let sizeInfo = ['Dress', 'T-Shirt', 'Shirt'].includes(category) 
-      ? `Size: ${selectedSize}` 
-      : ['Scarf', 'Stole'].includes(category) ? `Free Size` 
-      : `B:${measurements.bust || '-'} W:${measurements.waist || '-'} H:${measurements.hips || '-'} L:${measurements.length || '-'}`;
+  // Bespoke Configurator Selection
+  const [selections, setSelections] = useState<Product>({
+    id: 0,
+    category: 'Saree',
+    fabric: 'Silk',
+    color: 'Champagne Gold',
+    type: 'custom',
+    measurements: { bust: '', waist: '', hips: '', sleeves: '', length: '' },
+    blouse: { cut: 'Round Cut', buttons: 'Back' }
+  });
 
-    const newItem = { id: Date.now(), category, fabric, embroidery, color: color.toUpperCase(), embroideryColor: embroideryColor.toUpperCase(), sizeOrMeasurements: sizeInfo, notes };
-    setCart([...cart, newItem]);
+  // --- LOGIC HANDLERS ---
+  const handleWhatsAppCheckout = () => {
+    const whatsappNumber = "917991464638";
+    let msg = `*NEW ORDER - KALAKARI*\n\n`;
+    msg += `*CUSTOMER*\nName: ${user.name}\nPhone: ${user.phone}\nEmail: ${user.email}\n\n`;
+    msg += `*ADDRESS*\n${address.house}, ${address.city}, ${address.state} - ${address.pincode}\n\n`;
+    msg += `*ORDER DETAILS*\n`;
+    cart.forEach((item, i) => {
+      msg += `\n${i+1}. ${item.category} (${item.type})\n   Fabric: ${item.fabric}\n   Color: ${item.color}\n`;
+      if (item.type === 'custom') {
+        msg += `   Blouse: ${item.blouse?.cut}, Buttons: ${item.blouse?.buttons}\n`;
+      }
+    });
+    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
+  const addToCart = (product: Product) => {
+    setCart([...cart, { ...product, id: Date.now() }]);
     setIsCartOpen(true);
   };
 
-  const generateWhatsAppLink = () => {
-    const phoneNumber = '917991464638';
-    let message = `✨ *NEW ORDER - KALAKARI* ✨\n\n`;
-    message += `👤 *CUSTOMER*\n• Name: ${customerInfo.name}\n• Phone: ${customerInfo.number}\n• Email: ${customerInfo.gmail}\n• Location: ${customerInfo.city}, ${customerInfo.pincode}\n• Address: ${customerInfo.address}\n\n`;
-    message += `🛍️ *ORDER*\n`;
-    cart.forEach((item, index) => {
-      message += `*${index + 1}. ${item.category}*\n• Fabric: ${item.fabric} (${item.color})\n• Work: ${item.embroidery} (${item.embroideryColor})\n• ${item.sizeOrMeasurements}\n---\n`;
-    });
-    return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  const toggleWishlist = (product: Product) => {
+    if (wishlist.find(i => i.id === product.id)) {
+      setWishlist(wishlist.filter(i => i.id !== product.id));
+    } else {
+      setWishlist([...wishlist, { ...product, id: Date.now() }]);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 flex flex-col">
-      {/* NAVIGATION */}
-      <nav className="sticky top-0 z-50 bg-[#FAF9F6] border-b border-[#E3D9C6]/30 px-8 py-5 flex justify-between items-center shadow-sm">
-        <div className="flex items-center gap-12">
-          <span onClick={() => window.scrollTo({top:0, behavior:'smooth'})} className="font-serif text-2xl tracking-[0.15em] italic uppercase font-black cursor-pointer text-[#2D2926]">KALAKARI</span>
-          <div className="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E]">
-            <a href="#" className="hover:text-[#2D2926]">Collections</a>
-            <a href="#" className="hover:text-[#2D2926]">Bespoke</a>
-            <button onClick={() => setShowSamples(true)} className="hover:text-[#2D2926] uppercase">Samples</button>
-            <button onClick={() => setShowStory(true)} className="hover:text-[#2D2926] uppercase">Our Story</button>
-            <a href="mailto:chhayahajela167@gmail.com" className="hover:text-[#2D2926]">Contact</a>
+    <div className="min-h-screen bg-[#FDFBF7] text-[#2D2926] font-sans selection:bg-[#B19470] selection:text-white">
+      
+      {/* --- NAVIGATION --- */}
+      <nav className="sticky top-0 z-[100] bg-white/90 backdrop-blur-md px-6 md:px-12 py-5 flex justify-between items-center border-b border-stone-100">
+        <div className="flex items-baseline gap-8">
+          <span onClick={() => setView('home')} className="font-serif text-2xl font-black italic tracking-tighter cursor-pointer">KALAKARI</span>
+          <div className="hidden md:flex gap-6 text-[10px] font-bold uppercase tracking-widest text-stone-400">
+            <div className="relative group">
+              <button className="hover:text-black italic lowercase font-sans">collections</button>
+              <div className="absolute top-full left-0 hidden group-hover:block bg-white shadow-xl p-4 min-w-[140px] rounded-xl border border-stone-50">
+                <button onClick={() => setView('readymade')} className="block w-full text-left py-2 hover:text-black">Ready-made</button>
+                <button onClick={() => setView('custom')} className="block w-full text-left py-2 hover:text-black">Bespoke</button>
+              </div>
+            </div>
+            <button onClick={() => setView('samples')} className="hover:text-black italic lowercase font-sans">samples</button>
+            <button className="hover:text-black italic lowercase font-sans">our story</button>
           </div>
         </div>
-        <button onClick={() => setIsCartOpen(true)} className="relative p-2">
-          <ShoppingBag size={22} />
-          {cart.length > 0 && (
-            <span className="absolute -top-1 -right-1 bg-[#B19470] text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center font-bold">
-              {cart.length}
-            </span>
-          )}
-        </button>
+
+        <div className="flex items-center gap-5">
+          <User size={18} className="text-stone-400 hover:text-black cursor-pointer" onClick={() => setShowUserModal(true)} />
+          <div className="relative cursor-pointer" onClick={() => setShowWishlist(true)}>
+            <Heart size={18} className="text-stone-400 hover:text-black" />
+            {wishlist.length > 0 && <span className="absolute -top-1.5 -right-1.5 bg-[#B19470] text-white text-[7px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">{wishlist.length}</span>}
+          </div>
+          <button onClick={() => setIsCartOpen(true)} className="relative">
+            <ShoppingBag size={18} />
+            {cart.length > 0 && <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center">{cart.length}</span>}
+          </button>
+        </div>
       </nav>
 
-      {/* MAIN CONTENT */}
-      <main className="max-w-7xl mx-auto w-full px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-16 flex-grow">
-        <div className="space-y-8">
-            <h1 className="font-serif text-6xl md:text-8xl text-neutral-900 leading-[0.9] tracking-tighter">Your Boutique <br/> <span className="italic text-neutral-300">Your Way.</span></h1>
-            <div className="grid grid-cols-2 gap-4">
-                <img src={SAMPLE_IMAGES[0]} className="rounded-3xl h-[400px] w-full object-cover shadow-2xl" alt="Ethnic 1"/>
-                <img src={SAMPLE_IMAGES[4]} className="rounded-3xl h-[400px] w-full object-cover mt-12 shadow-2xl" alt="Ethnic 2"/>
+      <AnimatePresence mode="wait">
+        
+        {/* VIEW: HOME */}
+        {view === 'home' && (
+          <motion.section key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="px-6 md:px-20 py-16 text-center">
+            <h1 className="font-serif text-5xl md:text-[100px] leading-tight tracking-tighter mb-12">
+              Your Boutique, <br/> <span className="italic text-stone-300 underline decoration-1">Your Way.</span>
+            </h1>
+            <div className="relative max-w-5xl mx-auto flex flex-col md:flex-row gap-4 items-center justify-center">
+              <img src={SAMPLE_IMAGES[0]} className="w-full md:w-1/2 h-[60vh] object-cover rounded-2xl shadow-xl" alt="Luxe 1" />
+              <img src={SAMPLE_IMAGES[1]} className="w-full md:w-1/3 h-[50vh] object-cover rounded-2xl shadow-xl md:mt-24" alt="Luxe 2" />
+              <button 
+                onClick={() => setView('custom')}
+                className="absolute bg-white text-black px-12 py-5 rounded-full font-bold uppercase text-xs tracking-widest shadow-2xl hover:bg-black hover:text-white transition-all transform hover:scale-105"
+              >
+                Shop Now
+              </button>
             </div>
-        </div>
+          </motion.section>
+        )}
 
-        {/* CUSTOMIZER BOX */}
-        <div className="bg-[#FAF9F6] rounded-[3rem] p-8 md:p-12 border border-[#E3D9C6]/30 shadow-2xl space-y-10 h-fit">
-          <div>
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E] mb-5 block">Select Category</label>
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map(cat => (
-                <button key={cat} onClick={() => setCategory(cat)} className={`px-5 py-2.5 rounded-full text-[10px] font-black tracking-widest ${category === cat ? 'bg-[#2D2926] text-white' : 'bg-white text-[#8C867E] border border-[#E3D9C6]/20'}`}>{cat}</button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <section className="space-y-4">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E] block">1. Fabric & Color</label>
-              <select className="w-full bg-white border border-[#E3D9C6]/40 rounded-2xl px-5 py-4 text-sm font-bold outline-none" value={fabric} onChange={(e)=>setFabric(e.target.value)}>{FABRICS.map(f => <option key={f}>{f}</option>)}</select>
-              <div className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-[#E3D9C6]/20">
-                <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-12 h-12 rounded-lg cursor-pointer" />
-                <code className="text-[10px] font-black">{color.toUpperCase()}</code>
+        {/* VIEW: CUSTOMIZER */}
+        {view === 'custom' && (
+          <motion.section key="custom" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="max-w-7xl mx-auto px-6 py-12 grid lg:grid-cols-2 gap-16">
+            <div className="space-y-10">
+              <div className="flex items-center gap-4">
+                <button onClick={() => setView('home')} className="p-2 hover:bg-stone-100 rounded-full"><ArrowLeft size={18}/></button>
+                <h2 className="font-serif text-4xl italic">Bespoke Designer</h2>
               </div>
-            </section>
+              
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {['Saree', 'Lehenga', 'Kurta Set'].map(cat => (
+                  <button key={cat} onClick={() => {setActiveCategory(cat); setSelections({...selections, category: cat})}} className={`px-8 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all ${activeCategory === cat ? 'bg-black text-white' : 'bg-white border-stone-200 text-stone-400'}`}>
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 block mb-4">Choice of Fabric</label>
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                  {FABRICS.map(f => (
+                    <button key={f} onClick={() => setSelections({...selections, fabric: f})} className={`py-3 rounded-xl text-[10px] font-bold border transition-all ${selections.fabric === f ? 'bg-stone-100 border-black' : 'border-stone-100'}`}>{f}</button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-stone-50 p-8 rounded-3xl space-y-6">
+                <div className="flex items-center gap-2 font-serif italic text-xl border-b border-stone-200 pb-4"><Ruler size={18}/> Measurement Guide</div>
+                <div className="grid grid-cols-2 gap-4">
+                  {['bust', 'waist', 'hips', 'sleeves', 'length'].map(m => (
+                    <div key={m}>
+                      <label className="text-[9px] font-bold uppercase text-stone-400 mb-1 block">{m}</label>
+                      <input type="number" placeholder="inches" className="w-full p-4 rounded-xl border-none shadow-sm text-sm outline-none focus:ring-1 focus:ring-black" onChange={(e) => setSelections({...selections, measurements: {...selections.measurements!, [m]: e.target.value}})} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-[10px] font-black uppercase tracking-widest text-stone-400 block"><Scissors size={14} className="inline mr-1"/> Tailoring Details</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <select className="p-4 bg-white border border-stone-100 rounded-xl text-xs font-bold outline-none" onChange={(e) => setSelections({...selections, blouse: {...selections.blouse!, cut: e.target.value}})}>
+                    <option>Front Cut: Round</option>
+                    <option>Front Cut: V-Neck</option>
+                    <option>Front Cut: Sweetheart</option>
+                  </select>
+                  <select className="p-4 bg-white border border-stone-100 rounded-xl text-xs font-bold outline-none" onChange={(e) => setSelections({...selections, blouse: {...selections.blouse!, buttons: e.target.value}})}>
+                    <option>Buttons: Back</option>
+                    <option>Buttons: Front</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <button onClick={() => addToCart(selections)} className="flex-1 bg-black text-white py-6 rounded-2xl font-bold uppercase text-[10px] tracking-widest shadow-xl active:scale-95 transition-transform">Add to Bag</button>
+                <button onClick={() => toggleWishlist(selections)} className="p-6 bg-white border border-stone-100 rounded-2xl text-stone-300 hover:text-red-400 transition-colors"><Heart size={20}/></button>
+              </div>
+            </div>
             
-            <section className="space-y-4">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E] block">2. Embroidery & Shade</label>
-              <select className="w-full bg-white border border-[#E3D9C6]/40 rounded-2xl px-5 py-4 text-sm font-bold outline-none" value={embroidery} onChange={(e)=>setEmbroidery(e.target.value)}>{EMBROIDERY_STYLES.map(s => <option key={s}>{s}</option>)}</select>
-              <div className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-[#E3D9C6]/20">
-                <input type="color" value={embroideryColor} onChange={(e) => setEmbroideryColor(e.target.value)} className="w-12 h-12 rounded-lg cursor-pointer" />
-                <code className="text-[10px] font-black">{embroideryColor.toUpperCase()}</code>
-              </div>
-            </section>
-          </div>
-
-          <section className="pt-8 border-t border-[#E3D9C6]/30">
-            <div className="flex justify-between items-center mb-5 text-[10px] font-black uppercase tracking-[0.2em] text-[#8C867E]">
-              <span className="flex items-center gap-2"><Ruler size={14}/> Sizing</span>
-              <button onClick={() => setShowSizeChart(true)} className="underline">Size Guide</button>
+            <div className="hidden lg:block relative">
+               <img src={SAMPLE_IMAGES[2]} className="w-full h-[85vh] object-cover rounded-[3rem] shadow-2xl sticky top-32" alt="Preview" />
             </div>
-            {['Dress', 'T-Shirt', 'Shirt'].includes(category) ? (
-              <div className="flex gap-2 overflow-x-auto">
-                {STANDARD_SIZES.map(s => <button key={s} onClick={() => setSelectedSize(s)} className={`min-w-[48px] h-12 rounded-xl border-2 text-[10px] font-black ${selectedSize === s ? 'bg-[#2D2926] text-white' : 'bg-white text-neutral-300'}`}>{s}</button>)}
-              </div>
-            ) : !['Scarf', 'Stole'].includes(category) ? (
-              <div className="grid grid-cols-4 gap-3">
-                {['bust', 'waist', 'hips', 'length'].map(m => (
-                  <div key={m}>
-                    <span className="text-[8px] font-black uppercase text-[#8C867E] block mb-1 text-center">{m}</span>
-                    <input type="number" placeholder="0" className="w-full bg-white border border-[#E3D9C6]/30 rounded-xl p-3 text-sm text-center font-bold" onChange={(e) => setMeasurements({...measurements, [m as keyof typeof measurements]: e.target.value})} />
+          </motion.section>
+        )}
+
+        {/* VIEW: CHECKOUT */}
+        {view === 'checkout' && (
+          <motion.section key="checkout" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen grid lg:grid-cols-2">
+            <div className="bg-stone-50 p-12 md:p-20 border-r border-stone-200">
+              <span className="font-serif text-3xl font-black italic block mb-20">KALAKARI</span>
+              <div className="space-y-6">
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-stone-400">Your Selection</h3>
+                {cart.map(item => (
+                  <div key={item.id} className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+                    <div>
+                      <p className="font-bold text-sm uppercase">{item.category}</p>
+                      <p className="text-[10px] text-stone-400 uppercase">{item.fabric} • {item.color}</p>
+                    </div>
+                    <Trash2 size={16} className="text-stone-300 cursor-pointer" onClick={() => setCart(cart.filter(i => i.id !== item.id))} />
                   </div>
                 ))}
               </div>
-            ) : <p className="text-[10px] font-black italic text-neutral-300 uppercase tracking-widest">Free Size</p>}
-          </section>
+            </div>
 
-          <button onClick={addToCart} className="w-full bg-[#2D2926] text-white py-6 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl hover:bg-[#B19470] transition-all flex items-center justify-center gap-3 active:scale-95">
-            <Plus size={18}/> Add to Bag
-          </button>
-        </div>
-      </main>
+            <div className="p-12 md:p-20 bg-white">
+              <div className="max-w-md mx-auto h-full flex flex-col justify-center">
+                <div className="flex gap-4 mb-16 text-[10px] font-black uppercase tracking-widest items-center">
+                  <span className={checkoutStep === 'contact' ? 'text-black underline decoration-2' : 'text-stone-300'}>Contact</span>
+                  <ChevronRight size={12} className="text-stone-200"/>
+                  <span className={checkoutStep === 'address' ? 'text-black underline decoration-2' : 'text-stone-300'}>Address</span>
+                </div>
 
-      {/* FOOTER */}
-      <footer className="bg-[#FAF9F6] border-t border-[#E3D9C6]/30 py-12 px-8 mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
-          <span className="font-serif text-xl italic font-black uppercase text-[#2D2926]">KALAKARI</span>
-          
-          {/* UPDATED LEGAL & SUPPORT TABS */}
-          <div className="flex flex-wrap justify-center gap-8 text-[9px] font-black uppercase tracking-[0.2em] text-[#8C867E]">
-            <button onClick={() => setShowTerms(true)} className="hover:text-[#2D2926] transition-colors">Terms & Conditions</button>
-            <button onClick={() => setShowPrivacy(true)} className="hover:text-[#2D2926] transition-colors">Privacy Policy</button>
-            <button onClick={() => setShowSupport(true)} className="hover:text-[#2D2926] transition-colors">Customer Support</button>
+                {checkoutStep === 'contact' ? (
+                  <div className="space-y-4">
+                    <div className="bg-stone-50 p-4 rounded-2xl">
+                      <label className="text-[9px] font-bold text-stone-400 uppercase">Full Name</label>
+                      <input type="text" placeholder="Ayesha Kapoor" className="w-full bg-transparent outline-none font-bold" value={user.name} onChange={(e)=>setUser({...user, name: e.target.value})} />
+                    </div>
+                    <div className="bg-stone-50 p-4 rounded-2xl">
+                      <label className="text-[9px] font-bold text-stone-400 uppercase">Email</label>
+                      <input type="email" placeholder="ayesha@email.com" className="w-full bg-transparent outline-none font-bold" value={user.email} onChange={(e)=>setUser({...user, email: e.target.value})} />
+                    </div>
+                    <div className="bg-stone-50 p-4 rounded-2xl">
+                      <label className="text-[9px] font-bold text-stone-400 uppercase">Mobile Number</label>
+                      <input type="tel" placeholder="+91" className="w-full bg-transparent outline-none font-bold" value={user.phone} onChange={(e)=>setUser({...user, phone: e.target.value})} />
+                    </div>
+                    <button onClick={() => setCheckoutStep('address')} className="w-full bg-black text-white py-6 rounded-2xl font-bold uppercase text-[10px] tracking-widest mt-8 shadow-xl">Continue to Shipping</button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <button onClick={() => setCheckoutStep('contact')} className="flex items-center gap-2 text-[10px] font-black text-stone-300 uppercase mb-4 hover:text-black transition-colors"><ArrowLeft size={14}/> Change Details</button>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-stone-50 p-4 rounded-2xl">
+                        <label className="text-[9px] font-bold text-stone-400 uppercase">Pincode</label>
+                        <input type="text" className="w-full bg-transparent outline-none font-bold" onChange={(e)=>setAddress({...address, pincode: e.target.value})} />
+                      </div>
+                      <div className="bg-stone-50 p-4 rounded-2xl">
+                        <label className="text-[9px] font-bold text-stone-400 uppercase">City</label>
+                        <input type="text" className="w-full bg-transparent outline-none font-bold" onChange={(e)=>setAddress({...address, city: e.target.value})} />
+                      </div>
+                    </div>
+                    <div className="bg-stone-50 p-4 rounded-2xl">
+                      <label className="text-[9px] font-bold text-stone-400 uppercase">House Address</label>
+                      <textarea rows={3} className="w-full bg-transparent outline-none font-bold resize-none" onChange={(e)=>setAddress({...address, house: e.target.value})} />
+                    </div>
+                    <button onClick={handleWhatsAppCheckout} className="w-full bg-green-600 text-white py-6 rounded-2xl font-bold uppercase text-[10px] tracking-widest mt-8 flex items-center justify-center gap-3 shadow-xl hover:bg-green-700 transition-colors">
+                      <MessageCircle size={18}/> Pay & Order via WhatsApp
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.section>
+        )}
+
+      </AnimatePresence>
+
+      {/* --- SIDEBARS & MODALS --- */}
+      <AnimatePresence>
+        {isCartOpen && (
+          <div className="fixed inset-0 z-[200]">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCartOpen(false)} className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25 }} className="absolute right-0 top-0 h-full w-full max-w-md bg-white p-10 flex flex-col shadow-2xl">
+              <div className="flex justify-between items-center mb-12 border-b border-stone-100 pb-6">
+                <h2 className="font-serif text-3xl italic">The Bag ({cart.length})</h2>
+                <X className="cursor-pointer text-stone-300 hover:text-black" onClick={() => setIsCartOpen(false)} />
+              </div>
+              <div className="flex-grow overflow-y-auto space-y-4">
+                {cart.length === 0 ? (
+                  <div className="text-center text-stone-300 uppercase text-[9px] tracking-[0.2em] py-40">Your bag is empty</div>
+                ) : (
+                  cart.map(item => (
+                    <div key={item.id} className="flex justify-between items-center bg-stone-50 p-6 rounded-2xl border border-stone-100">
+                       <div>
+                         <p className="font-bold uppercase text-[10px] tracking-widest">{item.category}</p>
+                         <p className="text-[10px] text-stone-400">{item.fabric} • Custom Made</p>
+                       </div>
+                       <Trash2 size={16} className="text-stone-300 hover:text-red-400 cursor-pointer" onClick={() => setCart(cart.filter(i => i.id !== item.id))} />
+                    </div>
+                  ))
+                )}
+              </div>
+              {cart.length > 0 && (
+                <button onClick={() => {setView('checkout'); setIsCartOpen(false)}} className="w-full bg-black text-white py-6 rounded-2xl font-bold uppercase text-[10px] tracking-[0.3em] mt-8">Check out now</button>
+              )}
+            </motion.div>
           </div>
+        )}
 
-          <div className="flex gap-6">
-            <a href="https://www.instagram.com/hajelachhaya" target="_blank" className="p-3 bg-white border border-[#E3D9C6]/20 rounded-full text-[#8C867E] hover:bg-black hover:text-white transition-all"><Instagram size={20}/></a>
-            <a href="https://www.facebook.com/share/1CcqEsncpY/" target="_blank" className="p-3 bg-white border border-[#E3D9C6]/20 rounded-full text-[#8C867E] hover:bg-black hover:text-white transition-all"><Facebook size={20}/></a>
+        {showUserModal && (
+          <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowUserModal(false)} className="absolute inset-0 bg-black/40 backdrop-blur-md" />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-white w-full max-w-md p-12 rounded-[3rem] shadow-2xl">
+              <X className="absolute top-8 right-8 cursor-pointer text-stone-200 hover:text-black" onClick={() => setShowUserModal(false)} />
+              <h2 className="font-serif text-3xl italic mb-8">Identification</h2>
+              <div className="space-y-4">
+                <input type="text" placeholder="Full Name" className="w-full p-5 bg-stone-50 rounded-2xl outline-none text-sm" onChange={(e)=>setUser({...user, name: e.target.value})} />
+                <input type="email" placeholder="Email Address" className="w-full p-5 bg-stone-50 rounded-2xl outline-none text-sm" onChange={(e)=>setUser({...user, email: e.target.value})} />
+                <button className="w-full bg-black text-white py-5 rounded-2xl font-bold uppercase text-[10px] tracking-widest mt-4" onClick={()=>setShowUserModal(false)}>Save Identity</button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {showWishlist && (
+          <div className="fixed inset-0 z-[300] flex items-end md:items-center justify-center p-0 md:p-6">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setShowWishlist(false)} className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
+            <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className="relative bg-[#FDFBF7] w-full max-w-2xl p-10 rounded-t-[3rem] md:rounded-[3rem] shadow-2xl max-h-[80vh] overflow-y-auto">
+              <h2 className="font-serif text-3xl italic mb-10 flex items-center gap-2">Wishlist <Heart size={24} className="fill-red-400 text-red-400"/></h2>
+              {wishlist.length === 0 ? (
+                <p className="text-stone-300 py-10 uppercase text-[10px] tracking-widest text-center">No favorites yet</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {wishlist.map(item => (
+                    <div key={item.id} className="bg-white p-6 rounded-3xl border border-stone-100 flex justify-between items-center">
+                       <p className="font-bold text-xs uppercase">{item.category}</p>
+                       <button onClick={() => addToCart(item)} className="p-3 bg-stone-50 rounded-full hover:bg-black hover:text-white transition-colors"><ShoppingBag size={14}/></button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* --- FOOTER --- */}
+      <footer className="mt-20 px-10 py-16 bg-white border-t border-stone-100">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
+          <div className="text-center md:text-left">
+            <div className="font-serif text-2xl font-black italic mb-4">KALAKARI</div>
+            <p className="text-stone-400 text-[10px] font-bold uppercase tracking-widest">Handcrafted in Rajasthan, Delivered Globally.</p>
+          </div>
+          <div className="flex gap-10 text-[9px] font-black uppercase tracking-[0.2em] text-stone-400">
+            <button className="hover:text-black">Terms</button>
+            <button className="hover:text-black">Privacy</button>
+            <button className="hover:text-black">Support</button>
+          </div>
+          <div className="flex gap-4">
+            <a href="https://instagram.com/hajelachhaya" target="_blank" className="p-4 bg-stone-50 rounded-full hover:bg-black hover:text-white transition-all"><Instagram size={18}/></a>
+            <a href="#" className="p-4 bg-stone-50 rounded-full hover:bg-black hover:text-white transition-all"><Facebook size={18}/></a>
           </div>
         </div>
       </footer>
 
-      {/* OVERLAYS & MODALS */}
-      <AnimatePresence>
-        {/* CUSTOMER SUPPORT MODAL */}
-        {showSupport && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowSupport(false)} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[150]" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed inset-0 m-auto w-[90%] max-w-md h-fit bg-white z-[160] p-12 rounded-[3rem] shadow-2xl">
-              <button onClick={() => setShowSupport(false)} className="absolute top-8 right-8 text-neutral-300 hover:text-black"><X size={28}/></button>
-              <h2 className="font-serif text-3xl italic mb-8 uppercase tracking-tight text-center">Contact Support</h2>
-              
-              <div className="space-y-4">
-                {[
-                  { role: "Owner", phone: "917991464638" },
-                  { role: "Design Manager", phone: "919589120141" },
-                  { role: "Core Developer", phone: "919301661150" }
-                ].map((contact) => (
-                  <a 
-                    key={contact.phone}
-                    href={`https://wa.me/${contact.phone}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between p-5 bg-[#FAF9F6] border border-[#E3D9C6]/30 rounded-2xl hover:bg-[#2D2926] hover:text-white transition-all group"
-                  >
-                    <div>
-                      <p className="text-[8px] font-black uppercase tracking-widest text-[#8C867E] group-hover:text-neutral-400 mb-1">{contact.role}</p>
-                      <p className="text-xs font-bold uppercase tracking-wider">{contact.phone.replace('91', '+91 ')}</p>
-                    </div>
-                    <MessageCircle size={18} className="text-[#B19470]" />
-                  </a>
-                ))}
-              </div>
-              <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#8C867E] mt-8 text-center italic">Response time: Within 24 Hours</p>
-            </motion.div>
-          </>
-        )}
-
-        {/* SAMPLES MODAL */}
-        {showSamples && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowSamples(false)} className="fixed inset-0 bg-black/95 backdrop-blur-2xl z-[100]" />
-            <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }} className="fixed inset-0 m-auto w-[95%] max-w-5xl h-[85vh] bg-white z-[110] p-8 md:p-12 rounded-[3rem] shadow-2xl overflow-y-auto">
-              <button onClick={() => setShowSamples(false)} className="absolute top-8 right-8 text-neutral-300 hover:text-black transition-all"><X size={32}/></button>
-              <div className="mb-12">
-                <h2 className="font-serif text-4xl italic uppercase mb-2">The Archive</h2>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#8C867E]">Handpicked inspirations from our studio</p>
-              </div>
-              <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-                {SAMPLE_IMAGES.map((img, idx) => (
-                  <motion.div key={idx} whileHover={{ scale: 1.02 }} className="break-inside-avoid">
-                    <img src={img} className="w-full rounded-2xl shadow-lg border border-neutral-100" alt={`Sample ${idx}`} />
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          </>
-        )}
-
-        {/* TERMS & CONDITIONS MODAL */}
-        {showTerms && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowTerms(false)} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[150]" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed inset-0 m-auto w-[90%] max-w-2xl h-fit max-h-[80vh] bg-white z-[160] p-12 rounded-[3rem] shadow-2xl overflow-y-auto">
-              <button onClick={() => setShowTerms(false)} className="absolute top-8 right-8 text-neutral-300 hover:text-black"><X size={28}/></button>
-              <h2 className="font-serif text-3xl italic mb-6 uppercase tracking-tight">Terms & Conditions</h2>
-              <div className="text-[11px] font-bold text-neutral-600 leading-[1.8] uppercase tracking-wider space-y-4">
-                <p>1. <span className="text-black">Customization:</span> As each piece is handcrafted to your specific measurements, orders cannot be cancelled once production begins.</p>
-                <p>2. <span className="text-black">Handmade Nature:</span> Variations in embroidery and texture are hallmarks of authentic hand-craftsmanship.</p>
-                <p>3. <span className="text-black">Lead Time:</span> Standard production takes 3–6 weeks. Shipping dates are estimates.</p>
-              </div>
-            </motion.div>
-          </>
-        )}
-
-        {/* PRIVACY POLICY MODAL */}
-        {showPrivacy && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowPrivacy(false)} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[150]" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="fixed inset-0 m-auto w-[90%] max-w-2xl h-fit max-h-[80vh] bg-white z-[160] p-12 rounded-[3rem] shadow-2xl overflow-y-auto">
-              <button onClick={() => setShowPrivacy(false)} className="absolute top-8 right-8 text-neutral-300 hover:text-black"><X size={28}/></button>
-              <h2 className="font-serif text-3xl italic mb-6 uppercase tracking-tight">Privacy Policy</h2>
-              <div className="text-[11px] font-bold text-neutral-600 leading-[1.8] uppercase tracking-wider space-y-4">
-                <p>1. <span className="text-black">Data Collection:</span> We collect your details solely to process your bespoke order.</p>
-                <p>2. <span className="text-black">Third Parties:</span> We never sell your personal contact details to third-party advertisers.</p>
-                <p>3. <span className="text-black">Security:</span> All data shared is handled with end-to-end encryption for your safety.</p>
-              </div>
-            </motion.div>
-          </>
-        )}
-
-        {/* SIZE GUIDE MODAL */}
-        {showSizeChart && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowSizeChart(false)} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100]" />
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="fixed inset-0 m-auto w-[90%] max-w-xl h-fit bg-white z-[110] p-12 rounded-[3rem] shadow-2xl">
-              <button onClick={() => setShowSizeChart(false)} className="absolute top-8 right-8 text-neutral-300 hover:text-black"><X size={28}/></button>
-              <h2 className="font-serif text-3xl italic mb-8 uppercase tracking-tight">Standard Size Chart</h2>
-              <table className="w-full text-left text-[10px] font-black uppercase tracking-widest">
-                <thead><tr className="border-b border-neutral-100 text-[#8C867E]"><th className="py-4">Size</th><th className="py-4">Bust</th><th className="py-4">Waist</th><th className="py-4">Hips</th></tr></thead>
-                <tbody className="text-[#2D2926]">
-                  {[['XS','32','26','35'],['S','34','28','37'],['M','36','30','39'],['L','38','32','41'],['XL','40','34','43']].map((row) => (
-                    <tr key={row[0]} className="border-b border-neutral-50"><td className="py-4">{row[0]}</td><td className="py-4">{row[1]}"</td><td className="py-4">{row[2]}"</td><td className="py-4">{row[3]}"</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </motion.div>
-          </>
-        )}
-
-        {/* OUR STORY MODAL */}
-        {showStory && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowStory(false)} className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100]" />
-            <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }} className="fixed inset-0 m-auto w-[90%] max-w-2xl h-fit bg-white z-[110] p-16 rounded-[3rem] shadow-2xl">
-              <button onClick={() => setShowStory(false)} className="absolute top-8 right-8 text-neutral-300 hover:text-black"><X size={28}/></button>
-              <h2 className="font-serif text-4xl italic text-neutral-900 leading-tight mb-8">Curated by Heritage. <br/><span className="text-neutral-300">Crafted for You.</span></h2>
-              <p className="text-neutral-600 leading-[1.8] text-sm italic">At Kalakari, we bridge the gap between the master weaver’s courtyard and the modern woman’s wardrobe. Rooted in Rajasthan, refined for the world.</p>
-            </motion.div>
-          </>
-        )}
-
-        {/* CART SIDEBAR */}
-        {isCartOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCartOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60]" />
-            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed right-0 top-0 h-full w-full max-w-md bg-white z-[70] p-10 flex flex-col shadow-2xl overflow-hidden">
-              <div className="flex justify-between items-center mb-8 border-b pb-4"><h2 className="font-serif text-2xl italic uppercase">Bag ({cart.length})</h2><button onClick={() => setIsCartOpen(false)}><X size={28}/></button></div>
-              <div className="flex-grow overflow-y-auto space-y-6 pr-2">
-                {cart.length > 0 && (
-                  <div className="bg-[#FAF9F6] p-6 rounded-3xl space-y-3 border border-[#E3D9C6]/30">
-                    <h3 className="text-[10px] font-black uppercase tracking-widest text-[#8C867E] flex items-center gap-2 mb-2"><User size={14}/> Delivery Details</h3>
-                    <input type="text" placeholder="Full Name" className="w-full bg-white border border-[#E3D9C6]/20 rounded-xl px-4 py-3 text-xs font-bold outline-none" value={customerInfo.name} onChange={(e)=>setCustomerInfo({...customerInfo, name: e.target.value})} />
-                    <div className="grid grid-cols-2 gap-2">
-                      <input type="text" placeholder="Phone" className="w-full bg-white border border-[#E3D9C6]/20 rounded-xl px-4 py-3 text-xs font-bold outline-none" value={customerInfo.number} onChange={(e)=>setCustomerInfo({...customerInfo, number: e.target.value})} />
-                      <input type="email" placeholder="Gmail" className="w-full bg-white border border-[#E3D9C6]/20 rounded-xl px-4 py-3 text-xs font-bold outline-none" value={customerInfo.gmail} onChange={(e)=>setCustomerInfo({...customerInfo, gmail: e.target.value})} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input type="text" placeholder="City" className="w-full bg-white border border-[#E3D9C6]/20 rounded-xl px-4 py-3 text-xs font-bold outline-none" value={customerInfo.city} onChange={(e)=>setCustomerInfo({...customerInfo, city: e.target.value})} />
-                      <input type="text" placeholder="Pincode" className="w-full bg-white border border-[#E3D9C6]/20 rounded-xl px-4 py-3 text-xs font-bold outline-none" value={customerInfo.pincode} onChange={(e)=>setCustomerInfo({...customerInfo, pincode: e.target.value})} />
-                    </div>
-                    <textarea placeholder="Full Shipping Address" className="w-full bg-white border border-[#E3D9C6]/20 rounded-xl px-4 py-3 text-xs font-bold min-h-[60px] outline-none" value={customerInfo.address} onChange={(e)=>setCustomerInfo({...customerInfo, address: e.target.value})} />
-                  </div>
-                )}
-                {cart.length === 0 ? <p className="text-center text-[10px] font-black uppercase text-neutral-300 py-20">Bag is empty</p> : 
-                  cart.map((item: any) => (
-                    <div key={item.id} className="border-b pb-4 flex justify-between items-start">
-                      <div>
-                        <h4 className="font-black text-sm uppercase">{item.category}</h4>
-                        <p className="text-[10px] font-bold text-neutral-400 uppercase">{item.fabric} ({item.color}) • {item.embroidery} ({item.embroideryColor})</p>
-                        <p className="text-[10px] mt-1 font-black">{item.sizeOrMeasurements}</p>
-                      </div>
-                      <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-neutral-300 hover:text-red-500"><Trash2 size={16}/></button>
-                    </div>
-                  ))
-                }
-              </div>
-              {cart.length > 0 && <button onClick={() => window.open(generateWhatsAppLink(), '_blank')} className="w-full bg-[#2D2926] text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] mt-8 flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all"> <MessageCircle size={18}/> Place via WhatsApp </button>}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
