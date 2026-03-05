@@ -36,13 +36,11 @@ const COLORS = [
 ];
 
 export default function KalakariBoutique() {
-  // Navigation & UI State
   const [view, setView] = useState<'home' | 'collections' | 'samples' | 'story' | 'cart' | 'checkout' | 'account' | 'terms' | 'privacy' | 'support'>('home');
   const [colType, setColType] = useState<'readymade' | 'custom' | null>(null);
   const [customCat, setCustomCat] = useState<'Saree' | 'Lehenga' | 'Kurta Set' | null>(null);
   const [selectedReadymade, setSelectedReadymade] = useState<any>(null);
   
-  // Data State
   const [cart, setCart] = useState<any[]>([]);
   const [checkoutStep, setCheckoutStep] = useState<'contact' | 'address'>('contact');
   const [selection, setSelection] = useState({ fabric: FABRICS[0], work: WORK_TYPES[0], color: COLORS[3].name, size: 'M' });
@@ -65,35 +63,35 @@ export default function KalakariBoutique() {
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-black font-sans selection:bg-[#E9E5CE]">
       
-      {/* --- REPAIRED TOP NAVIGATION --- */}
-      <nav className="sticky top-0 z-[100] px-6 md:px-12 py-5 flex justify-between items-center border-b border-stone-200 bg-[#E9E5CE]">
+      {/* --- ENLARGED TOP NAVIGATION --- */}
+      <nav className="sticky top-0 z-[100] px-6 md:px-12 py-6 flex justify-between items-center border-b border-stone-200 bg-[#E9E5CE]">
         <div className="flex items-center gap-12">
-          <span onClick={() => {navigateTo('home'); setColType(null); setCustomCat(null)}} className="font-serif text-2xl md:text-3xl font-black italic cursor-pointer uppercase tracking-tighter">KALAKARI</span>
-          <div className="hidden lg:flex gap-8 text-[10px] font-black uppercase tracking-widest">
-            <button onClick={() => navigateTo('collections')}>Collections</button>
-            <button onClick={() => navigateTo('samples')}>Samples</button>
-            <button onClick={() => navigateTo('story')}>Our Story</button>
+          <span onClick={() => {navigateTo('home'); setColType(null); setCustomCat(null)}} className="font-serif text-3xl md:text-4xl font-black italic cursor-pointer uppercase tracking-tighter">KALAKARI</span>
+          <div className="hidden lg:flex gap-10 text-[12px] font-black uppercase tracking-widest">
+            <button onClick={() => navigateTo('collections')} className="hover:opacity-60 transition-opacity">COLLECTIONS</button>
+            <button onClick={() => navigateTo('samples')} className="hover:opacity-60 transition-opacity">SAMPLES</button>
+            <button onClick={() => navigateTo('story')} className="hover:opacity-60 transition-opacity">OUR STORY</button>
           </div>
         </div>
         <div className="flex items-center gap-8">
-          <button onClick={() => navigateTo('account')} className="hover:opacity-60 transition-opacity"><User size={22} /></button>
+          <button onClick={() => navigateTo('account')} className="hover:opacity-60 transition-opacity"><User size={24} /></button>
           <div onClick={() => navigateTo('cart')} className="relative cursor-pointer hover:opacity-60 transition-opacity">
-            <ShoppingBag size={24} />
-            {cart.length > 0 && <span className="absolute -top-2 -right-2 bg-black text-white text-[9px] w-5 h-5 rounded-full flex items-center justify-center font-bold">{cart.length}</span>}
+            <ShoppingBag size={26} />
+            {cart.length > 0 && <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">{cart.length}</span>}
           </div>
         </div>
       </nav>
 
       <AnimatePresence mode="wait">
         
-        {/* --- HOME VIEW --- */}
+        {/* --- HOME VIEW (UPDATED SIZE & GRID) --- */}
         {view === 'home' && (
-          <motion.section key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-24 px-6 text-center">
-            <h1 className="font-serif text-[12vw] md:text-[130px] italic leading-none mb-12">Artisanal Spirit</h1>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto mb-16">
-              <img src={ASSETS.SAREE_MAIN} className="rounded-3xl h-[450px] w-full object-cover shadow-xl" alt="Heritage" />
-              <img src={ASSETS.SHIRT} className="rounded-3xl h-[550px] w-full object-cover shadow-2xl md:-mt-10" alt="New Arrival" />
-              <img src={ASSETS.LEHENGA_MAIN} className="rounded-3xl h-[450px] w-full object-cover shadow-xl" alt="Couture" />
+          <motion.section key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 px-6 text-center">
+            <h1 className="font-serif text-5xl md:text-7xl italic leading-none mb-16">Artisanal Spirit</h1>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto mb-16 items-center">
+              <img src={ASSETS.SAREE_MAIN} className="rounded-3xl h-[500px] w-full object-cover shadow-xl" alt="Heritage" />
+              <img src={ASSETS.SHIRT} className="rounded-3xl h-[500px] w-full object-cover shadow-xl" alt="New Arrival" />
+              <img src={ASSETS.LEHENGA_MAIN} className="rounded-3xl h-[500px] w-full object-cover shadow-xl" alt="Couture" />
             </div>
             <button onClick={() => navigateTo('collections')} className="bg-black text-white px-16 py-6 rounded-full font-black uppercase tracking-widest text-xs shadow-lg hover:scale-105 transition-all">Enter Studio</button>
           </motion.section>
@@ -139,7 +137,7 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
 
-        {/* --- SELECTION MODAL (ACTION) --- */}
+        {/* --- SELECTION MODAL --- */}
         {selectedReadymade && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white w-full max-w-4xl rounded-[3rem] overflow-hidden flex flex-col md:flex-row shadow-2xl">
@@ -226,7 +224,7 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
 
-        {/* --- REPAIRED ARCHIVE --- */}
+        {/* --- INFORMATION VIEWS --- */}
         {view === 'samples' && (
           <motion.section key="samples" className="max-w-7xl mx-auto py-24 px-6 text-center">
             <h2 className="font-serif text-7xl italic mb-16 underline decoration-stone-200">The Archive</h2>
@@ -238,14 +236,37 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
 
-        {/* --- REPAIRED INFORMATION VIEWS --- */}
         {view === 'story' && <div className="max-w-3xl mx-auto py-32 px-6 text-center"><h2 className="font-serif text-7xl italic mb-10">Heritage</h2><p className="text-xl italic text-stone-600 leading-relaxed">Kalakari is where history meets the stitch. Guided by Chhaya Hajela, we transform ancient embroidery into contemporary silhouettes for the globally conscious.</p></div>}
-        {view === 'support' && <div className="max-w-3xl mx-auto py-32 px-6 text-center"><h2 className="font-serif text-7xl italic mb-10">Concierge</h2><div className="space-y-6 text-xl font-bold italic"><p className="flex items-center justify-center gap-4"><Phone size={24}/> +91 7991464638</p><p className="flex items-center justify-center gap-4"><Mail size={24}/> care@kalakari.in</p></div></div>}
-        {view === 'account' && <div className="max-w-3xl mx-auto py-32 px-6 text-center"><h2 className="font-serif text-7xl italic mb-10">My Space</h2><p className="text-[10px] font-black uppercase tracking-[0.8em] text-stone-300">Authentication system live soon. Track via WhatsApp.</p></div>}
-        {view === 'terms' && <div className="max-w-3xl mx-auto py-32 px-6"><h2 className="font-serif text-4xl italic mb-8 uppercase tracking-tighter">Terms of Service</h2><p className="text-stone-500 leading-loose font-medium">Bespoke orders are final. Production requires 21 business days.</p></div>}
-        {view === 'privacy' && <div className="max-w-3xl mx-auto py-32 px-6"><h2 className="font-serif text-4xl italic mb-8 uppercase tracking-tighter">Privacy</h2><p className="text-stone-500 leading-loose font-medium">Your design specifications and measurements are encrypted and never shared.</p></div>}
+        
+        {/* --- UPDATED SUPPORT SECTION --- */}
+        {view === 'support' && (
+          <div className="max-w-4xl mx-auto py-32 px-6 text-center">
+            <h2 className="font-serif text-7xl italic mb-16">Customer Support</h2>
+            <div className="grid md:grid-cols-3 gap-10">
+              {[
+                { role: "Owner", phone: "917991464638" },
+                { role: "Designer", phone: "919589120141" },
+                { role: "Developer", phone: "919301661150" }
+              ].map((contact) => (
+                <div key={contact.role} className="p-8 border-2 border-stone-200 rounded-[2rem]">
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-2">{contact.role}</p>
+                  <p className="text-xl font-bold italic flex items-center justify-center gap-3">
+                    <Phone size={18} className="text-stone-400"/> +{contact.phone}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-16 text-xl font-bold italic">
+               <p className="flex items-center justify-center gap-4 text-stone-400"><Mail size={24}/> care@kalakari.in</p>
+            </div>
+          </div>
+        )}
 
-        {/* --- CART VIEW --- */}
+        {view === 'account' && <div className="max-w-3xl mx-auto py-32 px-6 text-center"><h2 className="font-serif text-7xl italic mb-10">My Space</h2><p className="text-[10px] font-black uppercase tracking-[0.8em] text-stone-300">Authentication system live soon. Track via WhatsApp.</p></div>}
+        {view === 'terms' && <div className="max-w-3xl mx-auto py-32 px-6"><h2 className="font-serif text-4xl italic mb-8 uppercase tracking-tighter">Terms & Conditions</h2><p className="text-stone-500 leading-loose font-medium">Bespoke orders are final. Production requires 21 business days.</p></div>}
+        {view === 'privacy' && <div className="max-w-3xl mx-auto py-32 px-6"><h2 className="font-serif text-4xl italic mb-8 uppercase tracking-tighter">Privacy Policy</h2><p className="text-stone-500 leading-loose font-medium">Your design specifications and measurements are encrypted and never shared.</p></div>}
+
+        {/* --- CART & CHECKOUT --- */}
         {view === 'cart' && (
           <motion.section key="cart" className="max-w-2xl mx-auto py-24 px-6 text-center">
             <h2 className="font-serif text-7xl italic mb-12">Selection</h2>
@@ -267,7 +288,6 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
 
-        {/* --- 30/70 CHECKOUT --- */}
         {view === 'checkout' && (
           <motion.section key="checkout" className="min-h-screen flex flex-col lg:flex-row">
             <div className="w-full lg:w-[30%] bg-stone-100 p-8 lg:p-12 border-b lg:border-r border-stone-200">
@@ -311,12 +331,12 @@ export default function KalakariBoutique() {
         )}
       </AnimatePresence>
 
-      {/* --- REPAIRED FOOTER --- */}
+      {/* --- UPDATED FOOTER LINKS --- */}
       <footer className="px-6 py-24 bg-[#E9E5CE] border-t border-stone-200 text-center">
         <div className="flex flex-wrap justify-center gap-12 text-[10px] font-black uppercase tracking-[0.3em] mb-20">
-          <button onClick={() => navigateTo('terms')} className="hover:opacity-40">Terms</button>
-          <button onClick={() => navigateTo('privacy')} className="hover:opacity-40">Privacy</button>
-          <button onClick={() => navigateTo('support')} className="hover:opacity-40">Support Concierge</button>
+          <button onClick={() => navigateTo('terms')} className="hover:opacity-40">Terms & Conditions</button>
+          <button onClick={() => navigateTo('privacy')} className="hover:opacity-40">Privacy Policy</button>
+          <button onClick={() => navigateTo('support')} className="hover:opacity-40">Customer Support</button>
         </div>
         <div className="flex justify-center gap-12 mb-16">
           <a href="https://instagram.com/hajelachhaya" target="_blank" className="hover:scale-125 transition-transform"><Instagram size={28} /></a>
