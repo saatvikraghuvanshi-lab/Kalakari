@@ -6,7 +6,7 @@ import { getStorage } from "firebase/storage";
 const firebaseConfig = {
   apiKey: "AIzaSyCfcKe3L9ILLITQcUpacBATGuG88Cs1id4",
   authDomain: "the-archive-project-f2ab4.firebaseapp.com",
-  // This is the URL that will stop the crash!
+  // THIS LINE IS THE KEY:
   databaseURL: "https://the-archive-project-f2ab4-default-rtdb.firebaseio.com",
   projectId: "the-archive-project-f2ab4",
   storageBucket: "the-archive-project-f2ab4.firebasestorage.app",
