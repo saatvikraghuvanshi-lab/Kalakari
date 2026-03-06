@@ -18,10 +18,6 @@ import {
 import { auth, googleProvider } from './lib/firebase';
 
 // --- FIXED IMPORT PATHS ---
-import { db } from './lib/firebase'; 
-// (Note: You can combine the line above with the 'auth' import to keep it clean)
-
-// --- FIXED IMPORT PATHS ---
 import { db } from './lib/firebase';
 import { ref, onValue, push, set, remove } from 'firebase/database';
 
@@ -102,7 +98,7 @@ export default function KalakariBoutique() {
       console.error("Logout failed:", error);
     }
   };
-  
+
   // --- FETCH ARCHIVE FROM FIREBASE ---
   useEffect(() => {
     if (!db) return;
