@@ -10,7 +10,6 @@ const firebaseConfig = {
   storageBucket: "the-archive-project-f2ab4.firebasestorage.app",
   messagingSenderId: "198774506116",
   appId: "1:198774506116:web:a90f65dd5930c43bd478d1",
-  // ADD THE LINE BELOW:
   databaseURL: "https://the-archive-project-f2ab4-default-rtdb.firebaseio.com/"
 };
 
