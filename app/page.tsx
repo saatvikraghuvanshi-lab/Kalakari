@@ -84,10 +84,10 @@ export default function KalakariBoutique() {
 
       <AnimatePresence mode="wait">
         
-        {/* --- HOME VIEW (UPDATED SIZE & GRID) --- */}
+        {/* --- HOME VIEW --- */}
         {view === 'home' && (
           <motion.section key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 px-6 text-center">
-            <h1 className="font-serif text-5xl md:text-7xl italic leading-none mb-16">Artisanal Spirit</h1>
+            <h1 className="font-serif text-5xl md:text-7xl italic leading-none mb-16">Kalakari • Ancestral Threads Modern Silhouettes</h1>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto mb-16 items-center">
               <img src={ASSETS.SAREE_MAIN} className="rounded-3xl h-[500px] w-full object-cover shadow-xl" alt="Heritage" />
               <img src={ASSETS.SHIRT} className="rounded-3xl h-[500px] w-full object-cover shadow-xl" alt="New Arrival" />
@@ -236,9 +236,26 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
 
-        {view === 'story' && <div className="max-w-3xl mx-auto py-32 px-6 text-center"><h2 className="font-serif text-7xl italic mb-10">Heritage</h2><p className="text-xl italic text-stone-600 leading-relaxed">Kalakari is where history meets the stitch. Guided by Chhaya Hajela, we transform ancient embroidery into contemporary silhouettes for the globally conscious.</p></div>}
+        {view === 'story' && (
+          <motion.section key="story" className="max-w-4xl mx-auto py-32 px-6">
+            <h2 className="font-serif text-7xl italic mb-12 text-center underline decoration-stone-200">Our Story</h2>
+            <div className="space-y-12 text-stone-800">
+              <div>
+                <h3 className="font-serif text-3xl italic mb-4">The Soul of the Stitch</h3>
+                <p className="text-lg leading-relaxed">At Kalakari, we believe that every garment is a vessel for history. Our journey began in the vibrant lanes of Lucknow, where the rhythmic sound of the artisan's needle has echoed for generations. We don’t just create clothing; we curate memories, blending the age-old traditions of Chikan, Zardosi, and Gota Patti with a silhouette designed for the modern woman.</p>
+              </div>
+              <div>
+                <h3 className="font-serif text-3xl italic mb-4">Guided by Craft</h3>
+                <p className="text-lg leading-relaxed">Founded by Chhaya Hajela, Kalakari is an homage to the human hand. In an era of mass production, we remain committed to the slow, intentional process of bespoke tailoring. Each piece in our collection is a product of collaboration between our master craftspeople and our design studio.</p>
+              </div>
+              <div className="bg-[#E9E5CE] p-10 rounded-[3rem] text-center italic font-serif text-2xl">
+                "Kalakari is where history meets the stitch—crafted in Lucknow, worn by you, anywhere in the world."
+              </div>
+            </div>
+          </motion.section>
+        )}
         
-        {/* --- UPDATED SUPPORT SECTION --- */}
+        {/* --- SUPPORT SECTION --- */}
         {view === 'support' && (
           <div className="max-w-4xl mx-auto py-32 px-6 text-center">
             <h2 className="font-serif text-7xl italic mb-16">Customer Support</h2>
@@ -263,8 +280,46 @@ export default function KalakariBoutique() {
         )}
 
         {view === 'account' && <div className="max-w-3xl mx-auto py-32 px-6 text-center"><h2 className="font-serif text-7xl italic mb-10">My Space</h2><p className="text-[10px] font-black uppercase tracking-[0.8em] text-stone-300">Authentication system live soon. Track via WhatsApp.</p></div>}
-        {view === 'terms' && <div className="max-w-3xl mx-auto py-32 px-6"><h2 className="font-serif text-4xl italic mb-8 uppercase tracking-tighter">Terms & Conditions</h2><p className="text-stone-500 leading-loose font-medium">Bespoke orders are final. Production requires 21 business days.</p></div>}
-        {view === 'privacy' && <div className="max-w-3xl mx-auto py-32 px-6"><h2 className="font-serif text-4xl italic mb-8 uppercase tracking-tighter">Privacy Policy</h2><p className="text-stone-500 leading-loose font-medium">Your design specifications and measurements are encrypted and never shared.</p></div>}
+        
+        {view === 'terms' && (
+          <div className="max-w-3xl mx-auto py-32 px-6">
+            <h2 className="font-serif text-5xl italic mb-10 uppercase tracking-tighter">Terms & Conditions</h2>
+            <div className="space-y-8 text-sm font-medium text-stone-600 leading-relaxed">
+              <section>
+                <h4 className="text-black font-black uppercase tracking-widest mb-2">1. Bespoke & Custom Orders</h4>
+                <p>All custom-made, bespoke, or altered garments are final sale. Because these items are created to your specific measurements, they cannot be returned or exchanged. Artisanal variations in color and work are marks of authenticity.</p>
+              </section>
+              <section>
+                <h4 className="text-black font-black uppercase tracking-widest mb-2">2. Production Timelines</h4>
+                <p>Bespoke orders require 21 to 30 business days. Readymade items are dispatched within 3-5 business days. Kalakari is not responsible for logistics delays.</p>
+              </section>
+              <section>
+                <h4 className="text-black font-black uppercase tracking-widest mb-2">3. Cancellations</h4>
+                <p>Requests for changes or cancellations must be made within 24 hours of order placement. Beyond this window, production begins and no refunds are possible.</p>
+              </section>
+            </div>
+          </div>
+        )}
+
+        {view === 'privacy' && (
+          <div className="max-w-3xl mx-auto py-32 px-6">
+            <h2 className="font-serif text-5xl italic mb-10 uppercase tracking-tighter">Privacy Policy</h2>
+            <div className="space-y-8 text-sm font-medium text-stone-600 leading-relaxed">
+              <section>
+                <h4 className="text-black font-black uppercase tracking-widest mb-2">Data Collection</h4>
+                <p>We collect contact details, shipping info, and personal measurements required for bespoke tailoring. We do not sell or trade your personal information.</p>
+              </section>
+              <section>
+                <h4 className="text-black font-black uppercase tracking-widest mb-2">Security</h4>
+                <p>Your measurements and design specs are stored in a secure environment accessible only to the production team. All data is encrypted and handled with artisanal care.</p>
+              </section>
+              <section>
+                <h4 className="text-black font-black uppercase tracking-widest mb-2">WhatsApp Interaction</h4>
+                <p>As checkout is handled via WhatsApp, your data on that platform is subject to their own privacy policies. We only share necessary details with logistics partners.</p>
+              </section>
+            </div>
+          </div>
+        )}
 
         {/* --- CART & CHECKOUT --- */}
         {view === 'cart' && (
@@ -331,7 +386,7 @@ export default function KalakariBoutique() {
         )}
       </AnimatePresence>
 
-      {/* --- UPDATED FOOTER LINKS --- */}
+      {/* --- FOOTER LINKS --- */}
       <footer className="px-6 py-24 bg-[#E9E5CE] border-t border-stone-200 text-center">
         <div className="flex flex-wrap justify-center gap-12 text-[10px] font-black uppercase tracking-[0.3em] mb-20">
           <button onClick={() => navigateTo('terms')} className="hover:opacity-40">Terms & Conditions</button>
