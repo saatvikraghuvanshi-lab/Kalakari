@@ -90,14 +90,7 @@ export default function KalakariBoutique() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      setView('home'); // Redirect to home after logout
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
+ 
 
   // --- FETCH ARCHIVE FROM FIREBASE ---
   useEffect(() => {
@@ -125,49 +118,77 @@ export default function KalakariBoutique() {
     return () => unsubscribe();
   }, []);
 
-  // --- DELETE HANDLER ---
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to remove this piece from the archive?")) return;
-
-    try {
-      const itemRef = ref(db, `archive/${id}`);
-      await remove(itemRef);
-      alert("Removed from Archive.");
-    } catch (error) {
-      console.error("Delete failed:", error);
-      alert("Delete failed. Check your database permissions.");
-    }
-  };
-
-  // --- UPLOAD HANDLER ---
+// --- UPLOAD HANDLER ---
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 1. THE GUARD: Block non-admins immediately
+    if (!isAdmin) {
+      alert("Access Denied: Only admins can upload samples.");
+      return;
+    }
+
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
+    setUploading(true); //
     try {
+      // 2. Upload to ImgBB
       const formData = new FormData();
       formData.append("image", file);
 
-      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+      // Using the environment variable for security
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`, {
         method: "POST",
         body: formData,
       });
-      
+
       const result = await response.json();
       if (!result.success) throw new Error("ImgBB Upload Failed");
-      
-      const url = result.data.url;
-      
+
+      const url = result.data.url; //
+
+      // 3. Save to Firebase Realtime Database
+      // This creates a unique ID for every image uploaded
       const newArchiveRef = push(ref(db, 'archive'));
       await set(newArchiveRef, url);
-      
-      alert("Successfully added to The Archive!");
+
+      alert("Successfully added to The Archive!"); //
     } catch (error) {
-      console.error("Upload failed:", error);
-      alert("Upload failed. Check your internet or API key.");
+      console.error("Upload failed:", error); //
+      alert("Upload failed. Check your connection or API key.");
     } finally {
-      setUploading(false);
+      setUploading(false); //
+    }
+  };
+
+  // --- DELETE HANDLER ---
+  const handleDelete = async (id: string) => {
+    // 1. THE GUARD: Block non-admins
+    if (!isAdmin) {
+      alert("Access Denied: Only admins can delete samples.");
+      return;
+    }
+
+    // Safety confirmation before deleting
+    if (window.confirm("Are you sure you want to remove this piece from the Archive?")) {
+      try {
+        // 2. Remove from Firebase
+        const itemRef = ref(db, `archive/${id}`);
+        await remove(itemRef);
+        alert("Item deleted successfully.");
+      } catch (error) {
+        console.error("Delete failed:", error);
+        alert("Failed to delete item.");
+      }
+    }
+  };
+
+  // --- LOGOUT HANDLER ---
+  const handleLogout = async () => {
+    try {
+      await signOut(auth); // Logic from firebase/auth
+      setView('home'); // Redirect to home screen
+    } catch (error) {
+      console.error("Error signing out:", error);
     }
   };
 
@@ -403,44 +424,54 @@ export default function KalakariBoutique() {
           </div>
         )}
 
-        {view === 'account' && (
-            <div className="max-w-5xl mx-auto py-32 px-6 text-center">
-                <h2 className="font-serif text-7xl italic mb-10">My Space</h2>
-                
-                <div className="grid md:grid-cols-2 gap-10">
-                  {/* ADMIN UPLOAD PANEL */}
-                  <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-stone-100 flex flex-col justify-center">
-                      <h4 className="font-serif text-2xl italic mb-6">Admin: Add to Archive</h4>
-                      <label className={`flex flex-col items-center justify-center border-2 border-dashed border-stone-200 p-10 rounded-2xl cursor-pointer hover:bg-stone-50 transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                          {uploading ? <Loader2 className="animate-spin text-stone-400" size={40} /> : <Upload className="text-stone-300 mb-4" size={40} />}
-                          <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-                              {uploading ? 'Uploading Piece...' : 'Tap to Upload Sample'}
-                          </span>
-                          <input type="file" className="hidden" accept="image/*" onChange={handleUpload} />
-                      </label>
-                  </div>
+        {/* --- ADMIN & USER CONDITIONAL VIEW --- */}
+{isAdmin ? (
+  /* WHAT ADMINS SEE */
+  <div className="grid md:grid-cols-2 gap-10">
+    {/* ADMIN UPLOAD PANEL */}
+    <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-stone-100 flex flex-col justify-center">
+      <h4 className="font-serif text-2xl italic mb-6 text-stone-800">Admin: Add to Archive</h4>
+      <label className="flex flex-col items-center justify-center border-2 border-dashed border-stone-200 p-10 rounded-2xl cursor-pointer hover:bg-stone-50 transition-colors">
+        {uploading ? <Loader2 className="animate-spin text-stone-400" size={40} /> : <Upload className="text-stone-300 mb-4" size={40} />}
+        <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
+          {uploading ? 'Uploading Piece...' : 'Tap to Upload Sample'}
+        </span>
+        <input type="file" className="hidden" accept="image/*" onChange={handleUpload} />
+      </label>
+    </div>
 
-                  {/* ADMIN MANAGE PANEL */}
-                  <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-stone-100">
-                      <h4 className="font-serif text-2xl italic mb-6">Manage Archive</h4>
-                      <div className="h-64 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-                        {archiveItems.length > 0 ? archiveItems.map(item => (
-                          <div key={item.id} className="flex items-center justify-between bg-stone-50 p-4 rounded-2xl">
-                            <img src={item.url} className="w-12 h-12 object-cover rounded-lg" />
-                            <button onClick={() => handleDelete(item.id)} className="text-stone-300 hover:text-red-500 transition-colors">
-                              <Trash2 size={20} />
-                            </button>
-                          </div>
-                        )) : (
-                          <p className="text-stone-300 text-[10px] uppercase font-black py-20">No items to manage</p>
-                        )}
-                      </div>
-                  </div>
-                </div>
-
-                <p className="mt-10 text-[10px] font-black uppercase tracking-[0.8em] text-stone-300">Tracking & Authentication system live soon.</p>
-            </div>
+    {/* ADMIN MANAGE PANEL */}
+    <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-stone-100">
+      <h4 className="font-serif text-2xl italic mb-6 text-stone-800">Manage Archive</h4>
+      <div className="h-64 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+        {archiveItems.length > 0 ? archiveItems.map(item => (
+          <div key={item.id} className="flex items-center justify-between bg-stone-50 p-4 rounded-2xl">
+            <img src={item.url} className="w-12 h-12 object-cover rounded-lg" />
+            <button onClick={() => handleDelete(item.id)} className="text-stone-300 hover:text-red-500 transition-colors">
+              <Trash2 size={20} />
+            </button>
+          </div>
+        )) : (
+          <p className="text-stone-300 text-[10px] uppercase font-black py-20">No items to manage</p>
         )}
+      </div>
+    </div>
+  </div>
+) : (
+  /* WHAT REGULAR USERS SEE */
+  <div className="bg-white p-16 rounded-[3rem] border-2 border-stone-100 shadow-xl max-w-xl mx-auto">
+    <div className="w-24 h-24 bg-stone-50 rounded-full mx-auto mb-8 flex items-center justify-center border border-stone-100">
+      <User className="text-stone-300" size={48} />
+    </div>
+    <h3 className="text-3xl font-serif mb-2 text-stone-800">Welcome, {currentUser?.displayName || 'Guest'}</h3>
+    <p className="text-stone-400 font-medium mb-10 tracking-wide">{currentUser?.email}</p>
+    
+    <div className="pt-8 border-t border-stone-100 text-left">
+      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-300 mb-4">Account Details</h4>
+      <p className="text-stone-500 italic">No active orders or saved designs found.</p>
+    </div>
+  </div>
+)}
         
         {view === 'terms' && (
           <div className="max-w-3xl mx-auto py-32 px-6">
