@@ -7,7 +7,7 @@ import {
   ChevronRight, ArrowLeft, Send, Trash2, Palette, Ruler, Mail, Phone, Upload, Loader2
 } from 'lucide-react';
 
-// --- FIXED IMPORT PATH ---
+// --- FIXED IMPORT PATHS ---
 import { db, storage } from './lib/firebase';
 import { ref, onValue, push, set } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -74,14 +74,14 @@ export default function KalakariBoutique() {
 
     setUploading(true);
     try {
-      // 1. Upload to Storage
+      // 1. Upload to Storage (Using the storageRef alias)
       const imageRef = storageRef(storage, `archive/${Date.now()}_${file.name}`);
       await uploadBytes(imageRef, file);
       
       // 2. Get the Download URL
       const url = await getDownloadURL(imageRef);
       
-      // 3. Save reference in Realtime Database
+      // 3. Save reference in Realtime Database (Using the db ref)
       const newArchiveRef = push(ref(db, 'archive'));
       await set(newArchiveRef, url);
       
@@ -130,7 +130,7 @@ export default function KalakariBoutique() {
       </nav>
 
       <AnimatePresence mode="wait">
-        
+        {/* --- HOME VIEW --- */}
         {view === 'home' && (
           <motion.section key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 px-6 text-center">
             <h1 className="font-serif text-5xl md:text-7xl italic leading-none mb-16">Kalakari • Ancestral Threads Modern Silhouettes</h1>
@@ -302,6 +302,7 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
         
+        {/* --- SUPPORT SECTION --- */}
         {view === 'support' && (
           <div className="max-w-4xl mx-auto py-32 px-6 text-center">
             <h2 className="font-serif text-7xl italic mb-16">Customer Support</h2>
