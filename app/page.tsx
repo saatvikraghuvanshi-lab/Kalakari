@@ -4,10 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShoppingBag, User, X, Instagram, Facebook, 
-  ChevronRight, ArrowLeft, Send, Trash2, Palette, Ruler, Mail, Phone
+  ChevronRight, ArrowLeft, Send, Trash2, Palette, Ruler, Mail, Phone, Upload, Loader2
 } from 'lucide-react';
 
-// --- CURATED ASSET ENGINE ---
+// --- FIXED IMPORT PATH ---
+import { db, storage } from './lib/firebase';
+import { ref, onValue, push, set } from 'firebase/database';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+
+// --- FIXED ASSETS ---
 const ASSETS = {
   SAREE_MAIN: "https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg",
   LEHENGA_MAIN: "https://clothsvilla.com/cdn/shop/products/WhatsAppImage2022-04-02at2.31.50PM_3_1024x1024.jpg?v=1648890244",
@@ -16,14 +21,6 @@ const ASSETS = {
   TSHIRT: "https://cdn.cosmos.so/8056a947-4323-498f-990c-3f02f7112368?format=jpeg",
   STOLE: "https://cdn.cosmos.so/3a83e9e8-6a20-43e2-9f68-489ccf5d60dc?format=jpeg",
   SCARF: "https://cdn.cosmos.so/7aef443c-4c6e-4dc2-851a-6e4ce883039c?format=jpeg",
-  ARCHIVE: [
-    "https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg",
-    "https://theloomstore.in/cdn/shop/files/IMG_5243.jpg?v=1698303816&width=1946",
-    "https://cdn.cosmos.so/d87eaebb-5652-4e0c-8ec4-7214d4d45097?format=jpeg",
-    "https://cdn.cosmos.so/c236e60f-4d49-46cc-a98e-ee06d0e845d8?format=jpeg",
-    "https://cdn.cosmos.so/c56cc03d-07bd-4cf6-90fa-d1cf07851f3c?format=jpeg",
-    "https://cdn.cosmos.so/d8e6098d-0e69-4fe9-b247-df846574c130?format=jpeg"
-  ]
 };
 
 const FABRICS = ["Pure Chiffon", "Raw Silk", "Organza", "Chanderi Silk", "Georgette", "Cotton Mulmul", "Banarasi Brocade", "Tissue Silk"];
@@ -46,6 +43,57 @@ export default function KalakariBoutique() {
   const [selection, setSelection] = useState({ fabric: FABRICS[0], work: WORK_TYPES[0], color: COLORS[3].name, size: 'M' });
   const [form, setForm] = useState({ name: '', email: '', mobile: '', house: '', city: '', pin: '' });
 
+  // --- FIREBASE STATES ---
+  const [archiveImages, setArchiveImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+  // --- FETCH ARCHIVE FROM FIREBASE ---
+  useEffect(() => {
+    if (!db) return;
+    
+    const archiveRef = ref(db, 'archive');
+    const unsubscribe = onValue(archiveRef, (snapshot) => {
+      try {
+        const data = snapshot.val();
+        if (data) {
+          const urls = Object.values(data) as string[];
+          setArchiveImages(urls.reverse()); // Newest first
+        }
+      } catch (error) {
+        console.error("Error fetching archive:", error);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // --- UPLOAD HANDLER ---
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      // 1. Upload to Storage
+      const imageRef = storageRef(storage, `archive/${Date.now()}_${file.name}`);
+      await uploadBytes(imageRef, file);
+      
+      // 2. Get the Download URL
+      const url = await getDownloadURL(imageRef);
+      
+      // 3. Save reference in Realtime Database
+      const newArchiveRef = push(ref(db, 'archive'));
+      await set(newArchiveRef, url);
+      
+      alert("Successfully added to The Archive!");
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("Upload failed. Make sure your Firebase Storage rules allow uploads.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const navigateTo = (screen: any) => { setView(screen); window.scrollTo(0,0); };
 
   const addToBag = (item: any) => {
@@ -63,7 +111,6 @@ export default function KalakariBoutique() {
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-black font-sans selection:bg-[#E9E5CE]">
       
-      {/* --- ENLARGED TOP NAVIGATION --- */}
       <nav className="sticky top-0 z-[100] px-6 md:px-12 py-6 flex justify-between items-center border-b border-stone-200 bg-[#E9E5CE]">
         <div className="flex items-center gap-12">
           <span onClick={() => {navigateTo('home'); setColType(null); setCustomCat(null)}} className="font-serif text-3xl md:text-4xl font-black italic cursor-pointer uppercase tracking-tighter">KALAKARI</span>
@@ -84,7 +131,6 @@ export default function KalakariBoutique() {
 
       <AnimatePresence mode="wait">
         
-        {/* --- HOME VIEW --- */}
         {view === 'home' && (
           <motion.section key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 px-6 text-center">
             <h1 className="font-serif text-5xl md:text-7xl italic leading-none mb-16">Kalakari • Ancestral Threads Modern Silhouettes</h1>
@@ -97,7 +143,6 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
 
-        {/* --- COLLECTIONS CHOICE --- */}
         {view === 'collections' && !colType && (
           <motion.section key="col" className="max-w-5xl mx-auto py-32 px-6 grid md:grid-cols-2 gap-10">
             <div onClick={() => setColType('readymade')} className="p-20 border-2 border-stone-200 rounded-[3rem] text-center cursor-pointer hover:bg-black hover:text-white transition-all group">
@@ -111,7 +156,6 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
 
-        {/* --- READYMADE SHOP --- */}
         {colType === 'readymade' && (
           <motion.section key="ready" className="max-w-7xl mx-auto py-16 px-6">
             <button onClick={() => setColType(null)} className="mb-10 flex items-center gap-2 font-black uppercase text-[10px] tracking-widest hover:opacity-50"><ArrowLeft size={16}/> Back</button>
@@ -137,7 +181,6 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
 
-        {/* --- SELECTION MODAL --- */}
         {selectedReadymade && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white w-full max-w-4xl rounded-[3rem] overflow-hidden flex flex-col md:flex-row shadow-2xl">
@@ -171,7 +214,6 @@ export default function KalakariBoutique() {
           </div>
         )}
 
-        {/* --- CUSTOM STUDIO --- */}
         {colType === 'custom' && (
           <motion.section key="custom" className="max-w-6xl mx-auto py-16 px-6">
             <button onClick={() => setColType(null)} className="mb-10 flex items-center gap-2 font-black uppercase text-[10px] tracking-widest"><ArrowLeft size={16}/> Back</button>
@@ -224,15 +266,20 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
 
-        {/* --- INFORMATION VIEWS --- */}
         {view === 'samples' && (
           <motion.section key="samples" className="max-w-7xl mx-auto py-24 px-6 text-center">
             <h2 className="font-serif text-7xl italic mb-16 underline decoration-stone-200">The Archive</h2>
-            <div className="columns-1 sm:columns-2 lg:columns-3 gap-8 space-y-8">
-              {ASSETS.ARCHIVE.map((img, i) => (
-                <div key={i} className="rounded-3xl overflow-hidden shadow-xl border border-stone-100"><img src={img} className="w-full object-cover" /></div>
-              ))}
-            </div>
+            {archiveImages.length > 0 ? (
+                <div className="columns-1 sm:columns-2 lg:columns-3 gap-8 space-y-8">
+                {archiveImages.map((img, i) => (
+                    <div key={i} className="rounded-3xl overflow-hidden shadow-xl border border-stone-100">
+                        <img src={img} className="w-full object-cover" alt="Archive work" />
+                    </div>
+                ))}
+                </div>
+            ) : (
+                <p className="font-serif italic text-2xl text-stone-300 py-20">The archive is being curated...</p>
+            )}
           </motion.section>
         )}
 
@@ -255,7 +302,6 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
         
-        {/* --- SUPPORT SECTION --- */}
         {view === 'support' && (
           <div className="max-w-4xl mx-auto py-32 px-6 text-center">
             <h2 className="font-serif text-7xl italic mb-16">Customer Support</h2>
@@ -279,7 +325,25 @@ export default function KalakariBoutique() {
           </div>
         )}
 
-        {view === 'account' && <div className="max-w-3xl mx-auto py-32 px-6 text-center"><h2 className="font-serif text-7xl italic mb-10">My Space</h2><p className="text-[10px] font-black uppercase tracking-[0.8em] text-stone-300">Authentication system live soon. Track via WhatsApp.</p></div>}
+        {view === 'account' && (
+            <div className="max-w-3xl mx-auto py-32 px-6 text-center">
+                <h2 className="font-serif text-7xl italic mb-10">My Space</h2>
+                
+                {/* ADMIN UPLOAD PANEL */}
+                <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-stone-100 mb-10">
+                    <h4 className="font-serif text-2xl italic mb-6">Admin: Add to Archive</h4>
+                    <label className={`flex flex-col items-center justify-center border-2 border-dashed border-stone-200 p-10 rounded-2xl cursor-pointer hover:bg-stone-50 transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                        {uploading ? <Loader2 className="animate-spin text-stone-400" size={40} /> : <Upload className="text-stone-300 mb-4" size={40} />}
+                        <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
+                            {uploading ? 'Uploading Piece...' : 'Tap to Upload Sample'}
+                        </span>
+                        <input type="file" className="hidden" accept="image/*" onChange={handleUpload} />
+                    </label>
+                </div>
+
+                <p className="text-[10px] font-black uppercase tracking-[0.8em] text-stone-300">Tracking & Authentication system live soon.</p>
+            </div>
+        )}
         
         {view === 'terms' && (
           <div className="max-w-3xl mx-auto py-32 px-6">
@@ -321,7 +385,6 @@ export default function KalakariBoutique() {
           </div>
         )}
 
-        {/* --- CART & CHECKOUT --- */}
         {view === 'cart' && (
           <motion.section key="cart" className="max-w-2xl mx-auto py-24 px-6 text-center">
             <h2 className="font-serif text-7xl italic mb-12">Selection</h2>
@@ -359,7 +422,7 @@ export default function KalakariBoutique() {
             <div className="w-full lg:w-[70%] bg-white p-8 lg:p-32">
               <div className="flex gap-10 mb-16 items-center border-b pb-4 max-w-xl">
                 <span className={`text-[10px] font-black uppercase tracking-widest ${checkoutStep === 'contact' ? 'text-black border-b-2 border-black pb-2' : 'text-stone-300'}`}>Contact</span>
-                <ChevronRight size={16} className="text-stone-300" />
+                <span className="text-stone-300 mx-2">/</span>
                 <span className={`text-[10px] font-black uppercase tracking-widest ${checkoutStep === 'address' ? 'text-black border-b-2 border-black pb-2' : 'text-stone-300'}`}>Address</span>
               </div>
               <div className="max-w-xl space-y-6">
@@ -386,7 +449,6 @@ export default function KalakariBoutique() {
         )}
       </AnimatePresence>
 
-      {/* --- FOOTER LINKS --- */}
       <footer className="px-6 py-24 bg-[#E9E5CE] border-t border-stone-200 text-center">
         <div className="flex flex-wrap justify-center gap-12 text-[10px] font-black uppercase tracking-[0.3em] mb-20">
           <button onClick={() => navigateTo('terms')} className="hover:opacity-40">Terms & Conditions</button>
