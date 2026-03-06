@@ -4,27 +4,27 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShoppingBag, User, X, Instagram, Facebook, 
-  ChevronRight, ArrowLeft, Send, Trash2, Palette, Ruler, Mail, Phone, Upload, Loader2
+  ChevronRight, ArrowLeft, Send, Trash2, Palette, Ruler, Mail, Phone, Upload, Loader2, LogOut
 } from 'lucide-react';
-
-// ... (lines 1-8: React, Framer, and Lucide imports)
 
 import { 
   signInWithPopup, 
   signOut, 
   onAuthStateChanged, 
-  User as FirebaseUser 
+  User as FirebaseUser,
+  GoogleAuthProvider
 } from "firebase/auth";
-import { auth, googleProvider } from './lib/firebase';
-
-// --- FIXED IMPORT PATHS ---
-import { db } from './lib/firebase';
+import { auth, googleProvider, db } from './lib/firebase';
 import { ref, onValue, push, set, remove } from 'firebase/database';
 
-// Using Environment Variable for security
-const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY || "694406d04ca241ae4636689de09341fb";
+// --- CONFIGURATION ---
+const IMGBB_API_KEY = "694406d04ca241ae4636689de09341fb";
+const ADMIN_EMAILS = [
+  "dhruvhajela5@gmail.com", 
+  "saatvikraghuvanshi123@gmail.com", 
+  "chhayahajela167@gmail.com"
+];
 
-// --- FIXED ASSETS ---
 const ASSETS = {
   SAREE_MAIN: "https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg",
   LEHENGA_MAIN: "https://clothsvilla.com/cdn/shop/products/WhatsAppImage2022-04-02at2.31.50PM_3_1024x1024.jpg?v=1648890244",
@@ -45,7 +45,7 @@ const COLORS = [
 ];
 
 export default function KalakariBoutique() {
-  const [view, setView] = useState<'home' | 'collections' | 'samples' | 'story' | 'cart' | 'checkout' | 'account' | 'terms' | 'privacy' | 'support'>('home');
+  const [view, setView] = useState<string>('home');
   const [colType, setColType] = useState<'readymade' | 'custom' | null>(null);
   const [customCat, setCustomCat] = useState<'Saree' | 'Lehenga' | 'Kurta Set' | null>(null);
   const [selectedReadymade, setSelectedReadymade] = useState<any>(null);
@@ -55,31 +55,41 @@ export default function KalakariBoutique() {
   const [selection, setSelection] = useState({ fabric: FABRICS[0], work: WORK_TYPES[0], color: COLORS[3].name, size: 'M' });
   const [form, setForm] = useState({ name: '', email: '', mobile: '', house: '', city: '', pin: '' });
 
-  // --- FIREBASE STATES ---
   const [archiveItems, setArchiveItems] = useState<{id: string, url: string}[]>([]);
   const [uploading, setUploading] = useState(false);
-
-  // --- ADD THESE THREE LINES RIGHT HERE ---
-  const ADMIN_EMAILS = [
-    "dhruvhajela5@gmail.com", 
-    "saatvikraghuvanshi123@gmail.com", 
-    "chhayahajela167@gmail.com"
-  ]; 
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // --- AUTH LISTENER ---
   useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
-    setCurrentUser(user);
-    if (user?.email && ADMIN_EMAILS.includes(user.email)) {
-      setIsAdmin(true);
-    } else {
-      setIsAdmin(false);
-    }
-  });
-  return () => unsubscribe();
-},[]);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      if (user?.email && ADMIN_EMAILS.includes(user.email)) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
+  // --- FETCH ARCHIVE ---
+  useEffect(() => {
+    if (!db) return;
+    const archiveRef = ref(db, 'archive');
+    const unsubscribe = onValue(archiveRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const items = Object.entries(data).map(([id, url]) => ({ id, url: url as string }));
+        setArchiveItems(items.reverse());
+      } else {
+        setArchiveItems([]);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // --- HANDLERS ---
   const handleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
@@ -88,112 +98,47 @@ export default function KalakariBoutique() {
     }
   };
 
- 
+  const handleLogout = async () => {
+    await signOut(auth);
+    setView('home');
+  };
 
-  // --- FETCH ARCHIVE FROM FIREBASE ---
-  useEffect(() => {
-    if (!db) return;
-    
-    const archiveRef = ref(db, 'archive');
-    const unsubscribe = onValue(archiveRef, (snapshot) => {
-      try {
-        const data = snapshot.val();
-        if (data) {
-          // Mapping ID and URL so we can delete by ID later
-          const items = Object.entries(data).map(([id, url]) => ({
-            id,
-            url: url as string
-          }));
-          setArchiveItems(items.reverse()); // Newest first
-        } else {
-          setArchiveItems([]);
-        }
-      } catch (error) {
-        console.error("Error fetching archive:", error);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-// --- UPLOAD HANDLER ---
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  // Check both the state AND the actual logged-in email for immediate access
-  const isAuthorized = isAdmin || (currentUser?.email && ADMIN_EMAILS.includes(currentUser.email));
-
-  if (!isAuthorized) {
-    alert("Access Denied: Your email is not on the Admin list.");
-    return;
-  }
+    const isAuthorized = isAdmin || (currentUser?.email && ADMIN_EMAILS.includes(currentUser.email));
+    if (!isAuthorized) return alert("Access Denied: Admins Only.");
 
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploading(true); //
+    setUploading(true);
     try {
-      // 2. Upload to ImgBB
       const formData = new FormData();
       formData.append("image", file);
-
-      // Using the environment variable for security
-      const response = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`, {
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
         method: "POST",
         body: formData,
       });
-
       const result = await response.json();
-      if (!result.success) throw new Error("ImgBB Upload Failed");
-
-      const url = result.data.url; //
-
-      // 3. Save to Firebase Realtime Database
-      // This creates a unique ID for every image uploaded
-      const newArchiveRef = push(ref(db, 'archive'));
-      await set(newArchiveRef, url);
-
-      alert("Successfully added to The Archive!"); //
-    } catch (error) {
-      console.error("Upload failed:", error); //
-      alert("Upload failed. Check your connection or API key.");
-    } finally {
-      setUploading(false); //
-    }
-  };
-
-  // --- DELETE HANDLER ---
-  const handleDelete = async (id: string) => {
-    // 1. THE GUARD: Block non-admins
-    if (!isAdmin) {
-      alert("Access Denied: Only admins can delete samples.");
-      return;
-    }
-
-    // Safety confirmation before deleting
-    if (window.confirm("Are you sure you want to remove this piece from the Archive?")) {
-      try {
-        // 2. Remove from Firebase
-        const itemRef = ref(db, `archive/${id}`);
-        await remove(itemRef);
-        alert("Item deleted successfully.");
-      } catch (error) {
-        console.error("Delete failed:", error);
-        alert("Failed to delete item.");
+      if (result.success) {
+        const newArchiveRef = push(ref(db, 'archive'));
+        await set(newArchiveRef, result.data.url);
+        alert("Added to Archive!");
       }
+    } catch (error) {
+      alert("Upload failed.");
+    } finally {
+      setUploading(false);
     }
   };
 
-  // --- LOGOUT HANDLER ---
-  const handleLogout = async () => {
-    try {
-      await signOut(auth); // Logic from firebase/auth
-      setView('home'); // Redirect to home screen
-    } catch (error) {
-      console.error("Error signing out:", error);
+  const handleDelete = async (id: string) => {
+    if (!isAdmin) return alert("Admins only.");
+    if (window.confirm("Remove this piece from Archive?")) {
+      await remove(ref(db, `archive/${id}`));
     }
   };
 
   const navigateTo = (screen: any) => { setView(screen); window.scrollTo(0,0); };
-
   const addToBag = (item: any) => {
     setCart([...cart, { ...item, id: Math.random().toString(36).substr(2, 9) }]);
     setSelectedReadymade(null);
@@ -206,13 +151,31 @@ export default function KalakariBoutique() {
     window.open(`https://wa.me/917991464638?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
+  // --- AUTH GATE (LOGIN PAGE) ---
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] p-6 text-center">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <h1 className="font-serif text-7xl md:text-9xl italic mb-4 text-black tracking-tighter">KALAKARI</h1>
+          <p className="text-stone-400 mb-12 font-black uppercase tracking-[0.5em] text-[10px]">Ancestral Threads • Modern Silhouettes</p>
+          <button 
+            onClick={handleLogin}
+            className="group bg-black text-white px-10 py-5 rounded-full font-black uppercase text-[10px] tracking-widest flex items-center gap-4 hover:scale-105 transition-all shadow-2xl"
+          >
+            Continue with Google <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-black font-sans selection:bg-[#E9E5CE]">
-      
+      {/* --- NAVBAR --- */}
       <nav className="sticky top-0 z-[100] px-6 md:px-12 py-6 flex justify-between items-center border-b border-stone-200 bg-[#E9E5CE]">
         <div className="flex items-center gap-12">
           <span onClick={() => {navigateTo('home'); setColType(null); setCustomCat(null)}} className="font-serif text-3xl md:text-4xl font-black italic cursor-pointer uppercase tracking-tighter">KALAKARI</span>
-          <div className="hidden lg:flex gap-10 text-[12px] font-black uppercase tracking-widest">
+          <div className="hidden lg:flex gap-10 text-[10px] font-black uppercase tracking-widest">
             <button onClick={() => navigateTo('collections')} className="hover:opacity-60 transition-opacity">COLLECTIONS</button>
             <button onClick={() => navigateTo('samples')} className="hover:opacity-60 transition-opacity">SAMPLES</button>
             <button onClick={() => navigateTo('story')} className="hover:opacity-60 transition-opacity">OUR STORY</button>
@@ -231,29 +194,31 @@ export default function KalakariBoutique() {
         {/* --- HOME VIEW --- */}
         {view === 'home' && (
           <motion.section key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-20 px-6 text-center">
-            <h1 className="font-serif text-5xl md:text-7xl italic leading-none mb-16">Kalakari • Ancestral Threads Modern Silhouettes</h1>
+            <h1 className="font-serif text-5xl md:text-7xl italic leading-none mb-16 max-w-4xl mx-auto text-stone-800">Kalakari • Ancestral Threads Modern Silhouettes</h1>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto mb-16 items-center">
               <img src={ASSETS.SAREE_MAIN} className="rounded-3xl h-[500px] w-full object-cover shadow-xl" alt="Heritage" />
               <img src={ASSETS.SHIRT} className="rounded-3xl h-[500px] w-full object-cover shadow-xl" alt="New Arrival" />
               <img src={ASSETS.LEHENGA_MAIN} className="rounded-3xl h-[500px] w-full object-cover shadow-xl" alt="Couture" />
             </div>
-            <button onClick={() => navigateTo('collections')} className="bg-black text-white px-16 py-6 rounded-full font-black uppercase tracking-widest text-xs shadow-lg hover:scale-105 transition-all">Enter Studio</button>
+            <button onClick={() => navigateTo('collections')} className="bg-black text-white px-16 py-6 rounded-full font-black uppercase tracking-widest text-[10px] shadow-lg hover:scale-105 transition-all">Enter Studio</button>
           </motion.section>
         )}
 
+        {/* --- COLLECTIONS SPLIT --- */}
         {view === 'collections' && !colType && (
           <motion.section key="col" className="max-w-5xl mx-auto py-32 px-6 grid md:grid-cols-2 gap-10">
             <div onClick={() => setColType('readymade')} className="p-20 border-2 border-stone-200 rounded-[3rem] text-center cursor-pointer hover:bg-black hover:text-white transition-all group">
               <h3 className="font-serif text-5xl italic mb-4">Readymade</h3>
-              <p className="text-xs font-black uppercase opacity-60">Hand-Picked Essentials</p>
+              <p className="text-[10px] font-black uppercase opacity-60 tracking-widest">Hand-Picked Essentials</p>
             </div>
             <div onClick={() => setColType('custom')} className="p-20 border-2 border-stone-200 rounded-[3rem] text-center cursor-pointer hover:bg-black hover:text-white transition-all group">
               <h3 className="font-serif text-5xl italic mb-4">Custom</h3>
-              <p className="text-xs font-black uppercase opacity-60">Bespoke Design Experience</p>
+              <p className="text-[10px] font-black uppercase opacity-60 tracking-widest">Bespoke Design Experience</p>
             </div>
           </motion.section>
         )}
 
+        {/* --- READYMADE GALLERY --- */}
         {colType === 'readymade' && (
           <motion.section key="ready" className="max-w-7xl mx-auto py-16 px-6">
             <button onClick={() => setColType(null)} className="mb-10 flex items-center gap-2 font-black uppercase text-[10px] tracking-widest hover:opacity-50"><ArrowLeft size={16}/> Back</button>
@@ -279,6 +244,7 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
 
+        {/* --- PRODUCT MODAL --- */}
         {selectedReadymade && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white w-full max-w-4xl rounded-[3rem] overflow-hidden flex flex-col md:flex-row shadow-2xl">
@@ -306,12 +272,13 @@ export default function KalakariBoutique() {
                     </div>
                   </div>
                 )}
-                <button onClick={() => addToBag({ name: selectedReadymade.name, type: 'readymade', color: selection.color, size: selectedReadymade.hasSize ? selection.size : null })} className="w-full bg-black text-white py-6 rounded-2xl font-black uppercase text-xs tracking-[0.3em] shadow-xl hover:bg-stone-800">Add to Bag</button>
+                <button onClick={() => addToBag({ name: selectedReadymade.name, type: 'readymade', color: selection.color, size: selectedReadymade.hasSize ? selection.size : null })} className="w-full bg-black text-white py-6 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] shadow-xl hover:bg-stone-800 transition-colors">Add to Bag</button>
               </div>
             </motion.div>
           </div>
         )}
 
+        {/* --- CUSTOM DESIGN --- */}
         {colType === 'custom' && (
           <motion.section key="custom" className="max-w-6xl mx-auto py-16 px-6">
             <button onClick={() => setColType(null)} className="mb-10 flex items-center gap-2 font-black uppercase text-[10px] tracking-widest"><ArrowLeft size={16}/> Back</button>
@@ -335,7 +302,7 @@ export default function KalakariBoutique() {
                   </div>
                   <div className="space-y-4">
                     <label className="text-[10px] font-black uppercase opacity-40 tracking-widest">Work Detail</label>
-                    <select value={selection.work} onChange={(e) => setSelection({...selection, work: e.target.value})} className="w-full p-4 bg-stone-50 rounded-xl font-bold text-xs ring-1 ring-stone-100 border-none">
+                    <select value={selection.work} onChange={(e) => setSelection({...selection, work: e.target.value})} className="w-full p-4 bg-stone-50 rounded-xl font-bold text-xs ring-1 ring-stone-100 border-none outline-none">
                       {WORK_TYPES.map(w => <option key={w}>{w}</option>)}
                     </select>
                   </div>
@@ -357,20 +324,21 @@ export default function KalakariBoutique() {
                       ))}
                     </div>
                   </div>
-                  <button onClick={() => addToBag({ name: `Bespoke ${customCat}`, type: 'custom', ...selection })} className="w-full bg-black text-white py-6 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl">Confirm Spec</button>
+                  <button onClick={() => addToBag({ name: `Bespoke ${customCat}`, type: 'custom', ...selection })} className="w-full bg-black text-white py-6 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl hover:bg-stone-800 transition-colors">Confirm Spec</button>
                 </div>
               </div>
             )}
           </motion.section>
         )}
 
+        {/* --- SAMPLES / ARCHIVE --- */}
         {view === 'samples' && (
           <motion.section key="samples" className="max-w-7xl mx-auto py-24 px-6 text-center">
             <h2 className="font-serif text-7xl italic mb-16 underline decoration-stone-200">The Archive</h2>
             {archiveItems.length > 0 ? (
                 <div className="columns-1 sm:columns-2 lg:columns-3 gap-8 space-y-8">
                 {archiveItems.map((item) => (
-                    <div key={item.id} className="rounded-3xl overflow-hidden shadow-xl border border-stone-100">
+                    <div key={item.id} className="rounded-3xl overflow-hidden shadow-xl border border-stone-100 bg-white">
                         <img src={item.url} className="w-full object-cover" alt="Archive work" />
                     </div>
                 ))}
@@ -381,6 +349,7 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
 
+        {/* --- STORY --- */}
         {view === 'story' && (
           <motion.section key="story" className="max-w-4xl mx-auto py-32 px-6">
             <h2 className="font-serif text-7xl italic mb-12 text-center underline decoration-stone-200">Our Story</h2>
@@ -393,14 +362,14 @@ export default function KalakariBoutique() {
                 <h3 className="font-serif text-3xl italic mb-4">Guided by Craft</h3>
                 <p className="text-lg leading-relaxed">Founded by Chhaya Hajela, Kalakari is an homage to the human hand. In an era of mass production, we remain committed to the slow, intentional process of bespoke tailoring. Each piece in our collection is a product of collaboration between our master craftspeople and our design studio.</p>
               </div>
-              <div className="bg-[#E9E5CE] p-10 rounded-[3rem] text-center italic font-serif text-2xl">
+              <div className="bg-[#E9E5CE] p-10 rounded-[3rem] text-center italic font-serif text-2xl shadow-sm">
                 "Kalakari is where history meets the stitch—crafted in Lucknow, worn by you, anywhere in the world."
               </div>
             </div>
           </motion.section>
         )}
-        
-        {/* --- SUPPORT SECTION --- */}
+
+        {/* --- SUPPORT --- */}
         {view === 'support' && (
           <div className="max-w-4xl mx-auto py-32 px-6 text-center">
             <h2 className="font-serif text-7xl italic mb-16">Customer Support</h2>
@@ -410,7 +379,7 @@ export default function KalakariBoutique() {
                 { role: "Designer", phone: "919589120141" },
                 { role: "Developer", phone: "919301661150" }
               ].map((contact) => (
-                <div key={contact.role} className="p-8 border-2 border-stone-200 rounded-[2rem]">
+                <div key={contact.role} className="p-8 border-2 border-stone-200 rounded-[2rem] bg-white shadow-sm">
                   <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-2">{contact.role}</p>
                   <p className="text-xl font-bold italic flex items-center justify-center gap-3">
                     <Phone size={18} className="text-stone-400"/> +{contact.phone}
@@ -419,60 +388,132 @@ export default function KalakariBoutique() {
               ))}
             </div>
             <div className="mt-16 text-xl font-bold italic">
-               <p className="flex items-center justify-center gap-4 text-stone-400"><Mail size={24}/> care@kalakari.in</p>
+               <p className="flex items-center justify-center gap-4 text-stone-500"><Mail size={24}/> care@kalakari.in</p>
             </div>
           </div>
         )}
 
-        {/* --- ADMIN & USER CONDITIONAL VIEW --- */}
-{isAdmin ? (
-  /* WHAT ADMINS SEE */
-  <div className="grid md:grid-cols-2 gap-10">
-    {/* ADMIN UPLOAD PANEL */}
-    <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-stone-100 flex flex-col justify-center">
-      <h4 className="font-serif text-2xl italic mb-6 text-stone-800">Admin: Add to Archive</h4>
-      <label className="flex flex-col items-center justify-center border-2 border-dashed border-stone-200 p-10 rounded-2xl cursor-pointer hover:bg-stone-50 transition-colors">
-        {uploading ? <Loader2 className="animate-spin text-stone-400" size={40} /> : <Upload className="text-stone-300 mb-4" size={40} />}
-        <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-          {uploading ? 'Uploading Piece...' : 'Tap to Upload Sample'}
-        </span>
-        <input type="file" className="hidden" accept="image/*" onChange={handleUpload} />
-      </label>
-    </div>
+        {/* --- ACCOUNT / ADMIN --- */}
+        {view === 'account' && (
+          <motion.section key="account" className="max-w-5xl mx-auto py-32 px-6">
+            <div className="flex justify-between items-end mb-16">
+              <h2 className="font-serif text-7xl italic">My Space</h2>
+              <button onClick={handleLogout} className="text-stone-400 hover:text-red-500 transition-colors flex items-center gap-2 uppercase text-[10px] font-black tracking-widest">
+                <LogOut size={14} /> Sign Out
+              </button>
+            </div>
 
-    {/* ADMIN MANAGE PANEL */}
-    <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-stone-100">
-      <h4 className="font-serif text-2xl italic mb-6 text-stone-800">Manage Archive</h4>
-      <div className="h-64 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-        {archiveItems.length > 0 ? archiveItems.map(item => (
-          <div key={item.id} className="flex items-center justify-between bg-stone-50 p-4 rounded-2xl">
-            <img src={item.url} className="w-12 h-12 object-cover rounded-lg" />
-            <button onClick={() => handleDelete(item.id)} className="text-stone-300 hover:text-red-500 transition-colors">
-              <Trash2 size={20} />
-            </button>
-          </div>
-        )) : (
-          <p className="text-stone-300 text-[10px] uppercase font-black py-20">No items to manage</p>
+            {isAdmin ? (
+              <div className="grid md:grid-cols-2 gap-10">
+                <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-stone-100 flex flex-col justify-center min-h-[400px]">
+                  <h4 className="font-serif text-2xl italic mb-6 text-stone-800">Admin: Add to Archive</h4>
+                  <label className="flex flex-col items-center justify-center border-2 border-dashed border-stone-200 p-10 rounded-2xl cursor-pointer hover:bg-stone-50 transition-colors">
+                    {uploading ? <Loader2 className="animate-spin text-stone-400" size={40} /> : <Upload className="text-stone-300 mb-4" size={40} />}
+                    <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
+                      {uploading ? 'Uploading Piece...' : 'Tap to Upload Sample'}
+                    </span>
+                    <input type="file" className="hidden" accept="image/*" onChange={handleUpload} />
+                  </label>
+                </div>
+
+                <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-stone-100 min-h-[400px]">
+                  <h4 className="font-serif text-2xl italic mb-6 text-stone-800">Manage Archive</h4>
+                  <div className="h-64 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                    {archiveItems.length > 0 ? archiveItems.map(item => (
+                      <div key={item.id} className="flex items-center justify-between bg-stone-50 p-4 rounded-2xl group">
+                        <img src={item.url} className="w-12 h-12 object-cover rounded-lg shadow-sm" />
+                        <button onClick={() => handleDelete(item.id)} className="text-stone-300 hover:text-red-500 transition-colors">
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
+                    )) : (
+                      <p className="text-stone-300 text-[10px] uppercase font-black py-20 text-center">No items to manage</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white p-16 rounded-[4rem] border-2 border-stone-100 shadow-xl max-w-xl mx-auto text-center">
+                <div className="w-24 h-24 bg-stone-50 rounded-full mx-auto mb-8 flex items-center justify-center border border-stone-100">
+                  <User className="text-stone-300" size={48} />
+                </div>
+                <h3 className="text-3xl font-serif mb-2 text-stone-800">Welcome, {currentUser?.displayName}</h3>
+                <p className="text-stone-400 font-medium mb-10 tracking-wide">{currentUser?.email}</p>
+                <div className="pt-8 border-t border-stone-100 text-left">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-300 mb-4">Member Status</h4>
+                  <p className="text-stone-500 italic">No active orders or saved designs found.</p>
+                </div>
+              </div>
+            )}
+          </motion.section>
         )}
-      </div>
-    </div>
-  </div>
-) : (
-  /* WHAT REGULAR USERS SEE */
-  <div className="bg-white p-16 rounded-[3rem] border-2 border-stone-100 shadow-xl max-w-xl mx-auto">
-    <div className="w-24 h-24 bg-stone-50 rounded-full mx-auto mb-8 flex items-center justify-center border border-stone-100">
-      <User className="text-stone-300" size={48} />
-    </div>
-    <h3 className="text-3xl font-serif mb-2 text-stone-800">Welcome, {currentUser?.displayName || 'Guest'}</h3>
-    <p className="text-stone-400 font-medium mb-10 tracking-wide">{currentUser?.email}</p>
-    
-    <div className="pt-8 border-t border-stone-100 text-left">
-      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-300 mb-4">Account Details</h4>
-      <p className="text-stone-500 italic">No active orders or saved designs found.</p>
-    </div>
-  </div>
-)}
-        
+
+        {/* --- CART --- */}
+        {view === 'cart' && (
+          <motion.section key="cart" className="max-w-2xl mx-auto py-24 px-6 text-center">
+            <h2 className="font-serif text-7xl italic mb-12">Selection</h2>
+            <div className="space-y-8 mb-16">
+              {cart.map(item => (
+                <div key={item.id} className="flex justify-between items-center border-b pb-8 border-stone-200">
+                  <div className="text-left">
+                    <p className="font-serif italic text-3xl">{item.name}</p>
+                    <p className="text-[10px] font-black uppercase opacity-40 mt-2 tracking-widest">
+                      {item.type === 'custom' ? `${item.fabric} • ${item.work}` : `${item.color} ${item.size ? `• ${item.size}` : ''}`}
+                    </p>
+                  </div>
+                  <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-stone-300 hover:text-red-500 transition-colors"><Trash2 size={24}/></button>
+                </div>
+              ))}
+              {cart.length === 0 && <p className="text-2xl font-serif italic text-stone-200 py-20">Your bag is empty.</p>}
+            </div>
+            {cart.length > 0 && <button onClick={() => navigateTo('checkout')} className="w-full bg-black text-white py-8 rounded-full font-black uppercase text-[10px] tracking-widest shadow-2xl hover:bg-stone-800 transition-colors">Go to Checkout</button>}
+          </motion.section>
+        )}
+
+        {/* --- CHECKOUT --- */}
+        {view === 'checkout' && (
+          <motion.section key="checkout" className="min-h-screen flex flex-col lg:flex-row bg-white">
+            <div className="w-full lg:w-[30%] bg-stone-50 p-8 lg:p-12 border-b lg:border-r border-stone-100">
+              <span className="font-serif text-3xl font-black italic block mb-10 uppercase tracking-tighter">Order</span>
+              <div className="space-y-4">
+                {cart.map(item => (
+                  <div key={item.id} className="bg-white p-6 rounded-3xl shadow-sm border border-stone-100">
+                    <p className="font-serif italic text-lg">{item.name}</p>
+                    <p className="text-[9px] font-black uppercase opacity-40 mt-1">{item.type === 'custom' ? item.fabric : `${item.color} ${item.size ? `| ${item.size}` : ''}`}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="w-full lg:w-[70%] bg-white p-8 lg:p-32">
+              <div className="flex gap-10 mb-16 items-center border-b pb-4 max-w-xl">
+                <span className={`text-[10px] font-black uppercase tracking-widest ${checkoutStep === 'contact' ? 'text-black border-b-2 border-black pb-2' : 'text-stone-300'}`}>Contact</span>
+                <span className="text-stone-300 mx-2">/</span>
+                <span className={`text-[10px] font-black uppercase tracking-widest ${checkoutStep === 'address' ? 'text-black border-b-2 border-black pb-2' : 'text-stone-300'}`}>Address</span>
+              </div>
+              <div className="max-w-xl space-y-6">
+                {checkoutStep === 'contact' ? (
+                  <>
+                    <input type="tel" placeholder="Phone Number" value={form.mobile} onChange={e => setForm({...form, mobile: e.target.value})} className="w-full p-6 bg-stone-50 border-none rounded-2xl font-bold text-sm outline-none focus:ring-1 ring-black" />
+                    <input type="email" placeholder="Email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full p-6 bg-stone-50 border-none rounded-2xl font-bold text-sm outline-none focus:ring-1 ring-black" />
+                    <button onClick={() => setCheckoutStep('address')} className="w-full bg-black text-white py-8 rounded-full font-black uppercase text-[10px] tracking-widest hover:bg-stone-800 transition-colors">Next</button>
+                  </>
+                ) : (
+                  <>
+                    <input type="text" placeholder="Full Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full p-6 bg-stone-50 rounded-2xl font-bold text-sm outline-none focus:ring-1 ring-black" />
+                    <input type="text" placeholder="House / Street" value={form.house} onChange={e => setForm({...form, house: e.target.value})} className="w-full p-6 bg-stone-50 rounded-2xl font-bold text-sm outline-none focus:ring-1 ring-black" />
+                    <div className="grid grid-cols-2 gap-4">
+                      <input type="text" placeholder="City" value={form.city} onChange={e => setForm({...form, city: e.target.value})} className="p-6 bg-stone-50 rounded-2xl font-bold text-sm outline-none focus:ring-1 ring-black" />
+                      <input type="text" placeholder="Pin Code" value={form.pin} onChange={e => setForm({...form, pin: e.target.value})} className="p-6 bg-stone-50 rounded-2xl font-bold text-sm outline-none focus:ring-1 ring-black" />
+                    </div>
+                    <button onClick={sendWhatsApp} className="w-full bg-black text-white py-8 rounded-full font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-4 hover:bg-stone-800 transition-colors">Finish via WhatsApp <Send size={20}/></button>
+                  </>
+                )}
+              </div>
+            </div>
+          </motion.section>
+        )}
+
+        {/* --- LEGAL VIEWS --- */}
         {view === 'terms' && (
           <div className="max-w-3xl mx-auto py-32 px-6">
             <h2 className="font-serif text-5xl italic mb-10 uppercase tracking-tighter">Terms & Conditions</h2>
@@ -512,76 +553,14 @@ export default function KalakariBoutique() {
             </div>
           </div>
         )}
-
-        {view === 'cart' && (
-          <motion.section key="cart" className="max-w-2xl mx-auto py-24 px-6 text-center">
-            <h2 className="font-serif text-7xl italic mb-12">Selection</h2>
-            <div className="space-y-8 mb-16">
-              {cart.map(item => (
-                <div key={item.id} className="flex justify-between items-center border-b pb-8 border-stone-200">
-                  <div className="text-left">
-                    <p className="font-serif italic text-3xl">{item.name}</p>
-                    <p className="text-[10px] font-black uppercase opacity-40 mt-2 tracking-widest">
-                      {item.type === 'custom' ? `${item.fabric} • ${item.work}` : `${item.color} ${item.size ? `• ${item.size}` : ''}`}
-                    </p>
-                  </div>
-                  <button onClick={() => setCart(cart.filter(i => i.id !== item.id))} className="text-stone-300 hover:text-red-500 transition-colors"><Trash2 size={24}/></button>
-                </div>
-              ))}
-              {cart.length === 0 && <p className="text-2xl font-serif italic text-stone-200 py-20">Your bag is empty.</p>}
-            </div>
-            {cart.length > 0 && <button onClick={() => navigateTo('checkout')} className="w-full bg-black text-white py-8 rounded-full font-black uppercase text-xs tracking-widest shadow-2xl">Go to Checkout</button>}
-          </motion.section>
-        )}
-
-        {view === 'checkout' && (
-          <motion.section key="checkout" className="min-h-screen flex flex-col lg:flex-row">
-            <div className="w-full lg:w-[30%] bg-stone-100 p-8 lg:p-12 border-b lg:border-r border-stone-200">
-              <span className="font-serif text-3xl font-black italic block mb-10 uppercase tracking-tighter">Order</span>
-              <div className="space-y-4">
-                {cart.map(item => (
-                  <div key={item.id} className="bg-white p-6 rounded-3xl shadow-sm border border-stone-200">
-                    <p className="font-serif italic text-lg">{item.name}</p>
-                    <p className="text-[9px] font-black uppercase opacity-40 mt-1">{item.type === 'custom' ? item.fabric : `${item.color} ${item.size ? `| ${item.size}` : ''}`}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="w-full lg:w-[70%] bg-white p-8 lg:p-32">
-              <div className="flex gap-10 mb-16 items-center border-b pb-4 max-w-xl">
-                <span className={`text-[10px] font-black uppercase tracking-widest ${checkoutStep === 'contact' ? 'text-black border-b-2 border-black pb-2' : 'text-stone-300'}`}>Contact</span>
-                <span className="text-stone-300 mx-2">/</span>
-                <span className={`text-[10px] font-black uppercase tracking-widest ${checkoutStep === 'address' ? 'text-black border-b-2 border-black pb-2' : 'text-stone-300'}`}>Address</span>
-              </div>
-              <div className="max-w-xl space-y-6">
-                {checkoutStep === 'contact' ? (
-                  <>
-                    <input type="tel" placeholder="Phone Number" value={form.mobile} onChange={e => setForm({...form, mobile: e.target.value})} className="w-full p-6 bg-stone-50 border-none rounded-2xl font-bold text-sm" />
-                    <input type="email" placeholder="Email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="w-full p-6 bg-stone-50 border-none rounded-2xl font-bold text-sm" />
-                    <button onClick={() => setCheckoutStep('address')} className="w-full bg-black text-white py-8 rounded-full font-black uppercase text-xs tracking-widest">Next</button>
-                  </>
-                ) : (
-                  <>
-                    <input type="text" placeholder="Full Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full p-6 bg-stone-50 rounded-2xl font-bold text-sm" />
-                    <input type="text" placeholder="House / Street" value={form.house} onChange={e => setForm({...form, house: e.target.value})} className="w-full p-6 bg-stone-50 rounded-2xl font-bold text-sm" />
-                    <div className="grid grid-cols-2 gap-4">
-                      <input type="text" placeholder="City" value={form.city} onChange={e => setForm({...form, city: e.target.value})} className="p-6 bg-stone-50 rounded-2xl font-bold text-sm" />
-                      <input type="text" placeholder="Pin Code" value={form.pin} onChange={e => setForm({...form, pin: e.target.value})} className="p-6 bg-stone-50 rounded-2xl font-bold text-sm" />
-                    </div>
-                    <button onClick={sendWhatsApp} className="w-full bg-black text-white py-8 rounded-full font-black uppercase text-xs tracking-widest flex items-center justify-center gap-4">Finish via WhatsApp <Send size={20}/></button>
-                  </>
-                )}
-              </div>
-            </div>
-          </motion.section>
-        )}
       </AnimatePresence>
 
+      {/* --- FOOTER --- */}
       <footer className="px-6 py-24 bg-[#E9E5CE] border-t border-stone-200 text-center">
         <div className="flex flex-wrap justify-center gap-12 text-[10px] font-black uppercase tracking-[0.3em] mb-20">
-          <button onClick={() => navigateTo('terms')} className="hover:opacity-40">Terms & Conditions</button>
-          <button onClick={() => navigateTo('privacy')} className="hover:opacity-40">Privacy Policy</button>
-          <button onClick={() => navigateTo('support')} className="hover:opacity-40">Customer Support</button>
+          <button onClick={() => navigateTo('terms')} className="hover:opacity-40 transition-opacity">Terms & Conditions</button>
+          <button onClick={() => navigateTo('privacy')} className="hover:opacity-40 transition-opacity">Privacy Policy</button>
+          <button onClick={() => navigateTo('support')} className="hover:opacity-40 transition-opacity">Customer Support</button>
         </div>
         <div className="flex justify-center gap-12 mb-16">
           <a href="https://instagram.com/hajelachhaya" target="_blank" className="hover:scale-125 transition-transform"><Instagram size={28} /></a>
