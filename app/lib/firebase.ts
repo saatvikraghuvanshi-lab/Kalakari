@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
+import { getAuth, GoogleAuthProvider } from "firebase/auth"; // Added for Authentication
 
 const firebaseConfig = {
   apiKey: "AIzaSyCfcKe3L9ILLITQcUpacBATGuG88Cs1id4",
@@ -13,5 +14,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// We only need the Database for the archive links
+// Database for archive links
 export const db = getDatabase(app);
+
+// Authentication exports
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();

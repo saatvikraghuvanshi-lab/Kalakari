@@ -7,6 +7,20 @@ import {
   ChevronRight, ArrowLeft, Send, Trash2, Palette, Ruler, Mail, Phone, Upload, Loader2
 } from 'lucide-react';
 
+// ... (lines 1-8: React, Framer, and Lucide imports)
+
+import { 
+  signInWithPopup, 
+  signOut, 
+  onAuthStateChanged, 
+  User as FirebaseUser 
+} from "firebase/auth";
+import { auth, googleProvider } from './lib/firebase';
+
+// --- FIXED IMPORT PATHS ---
+import { db } from './lib/firebase'; 
+// (Note: You can combine the line above with the 'auth' import to keep it clean)
+
 // --- FIXED IMPORT PATHS ---
 import { db } from './lib/firebase';
 import { ref, onValue, push, set, remove } from 'firebase/database';
@@ -49,6 +63,46 @@ export default function KalakariBoutique() {
   const [archiveItems, setArchiveItems] = useState<{id: string, url: string}[]>([]);
   const [uploading, setUploading] = useState(false);
 
+  // --- ADD THESE THREE LINES RIGHT HERE ---
+  const ADMIN_EMAILS = [
+    "dhruvhajela5@gmail.com", 
+    "saatvikraghuvanshi123@gmail.com", 
+    "chhayahajela167@gmail.com"
+  ]; 
+  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      
+      // If the logged-in email is found in our ADMIN_EMAILS list
+      if (user?.email && ADMIN_EMAILS.includes(user.email)) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogin = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setView('home'); // Redirect to home after logout
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+  
   // --- FETCH ARCHIVE FROM FIREBASE ---
   useEffect(() => {
     if (!db) return;
