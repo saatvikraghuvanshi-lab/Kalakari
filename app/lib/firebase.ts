@@ -3,7 +3,8 @@ import { getDatabase } from "firebase/database";
 import { getAuth, GoogleAuthProvider } from "firebase/auth"; // Added for Authentication
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCfcKe3L9ILLITQcUpacBATGuG88Cs1id4",
+  // REPLACE the old key with this one from your "API key created" popup
+  apiKey: "AIzaSyAWFOITwLxJilyAkncuht7Z1F_ZoFNZTns", 
   authDomain: "the-archive-project-f2ab4.firebaseapp.com",
   databaseURL: "https://the-archive-project-f2ab4-default-rtdb.firebaseio.com",
   projectId: "the-archive-project-f2ab4",
