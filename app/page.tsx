@@ -69,18 +69,16 @@ export default function KalakariBoutique() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      
-      // If the logged-in email is found in our ADMIN_EMAILS list
-      if (user?.email && ADMIN_EMAILS.includes(user.email)) {
-        setIsAdmin(true);
-      } else {
-        setIsAdmin(false);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    setCurrentUser(user);
+    if (user?.email && ADMIN_EMAILS.includes(user.email)) {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
+    }
+  });
+  return () => unsubscribe();
+},[]);
 
   const handleLogin = async () => {
     try {
@@ -120,11 +118,13 @@ export default function KalakariBoutique() {
 
 // --- UPLOAD HANDLER ---
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    // 1. THE GUARD: Block non-admins immediately
-    if (!isAdmin) {
-      alert("Access Denied: Only admins can upload samples.");
-      return;
-    }
+  // Check both the state AND the actual logged-in email for immediate access
+  const isAuthorized = isAdmin || (currentUser?.email && ADMIN_EMAILS.includes(currentUser.email));
+
+  if (!isAuthorized) {
+    alert("Access Denied: Your email is not on the Admin list.");
+    return;
+  }
 
     const file = e.target.files?.[0];
     if (!file) return;
