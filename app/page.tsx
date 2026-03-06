@@ -8,9 +8,10 @@ import {
 } from 'lucide-react';
 
 // --- FIXED IMPORT PATHS ---
-import { db, storage } from './lib/firebase';
+import { db } from './lib/firebase';
 import { ref, onValue, push, set } from 'firebase/database';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+
+const IMGBB_API_KEY = "694406d04ca241ae4636689de09341fb";
 
 // --- FIXED ASSETS ---
 const ASSETS = {
@@ -67,28 +68,37 @@ export default function KalakariBoutique() {
     return () => unsubscribe();
   }, []);
 
-  // --- UPLOAD HANDLER ---
+  // --- UPDATED UPLOAD HANDLER (USING IMGBB) ---
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
     try {
-      // 1. Upload to Storage (Using the storageRef alias)
-      const imageRef = storageRef(storage, `archive/${Date.now()}_${file.name}`);
-      await uploadBytes(imageRef, file);
+      // 1. Prepare Form Data for ImgBB
+      const formData = new FormData();
+      formData.append("image", file);
+
+      // 2. Post to ImgBB
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: "POST",
+        body: formData,
+      });
       
-      // 2. Get the Download URL
-      const url = await getDownloadURL(imageRef);
+      const result = await response.json();
       
-      // 3. Save reference in Realtime Database (Using the db ref)
+      if (!result.success) throw new Error("ImgBB Upload Failed");
+      
+      const url = result.data.url;
+      
+      // 3. Save reference in Firebase Realtime Database
       const newArchiveRef = push(ref(db, 'archive'));
       await set(newArchiveRef, url);
       
       alert("Successfully added to The Archive!");
     } catch (error) {
       console.error("Upload failed:", error);
-      alert("Upload failed. Make sure your Firebase Storage rules allow uploads.");
+      alert("Upload failed. Check your internet or API key.");
     } finally {
       setUploading(false);
     }
