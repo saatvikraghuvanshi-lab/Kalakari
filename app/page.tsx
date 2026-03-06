@@ -9,9 +9,10 @@ import {
 
 // --- FIXED IMPORT PATHS ---
 import { db } from './lib/firebase';
-import { ref, onValue, push, set } from 'firebase/database';
+import { ref, onValue, push, set, remove } from 'firebase/database';
 
-const IMGBB_API_KEY = "694406d04ca241ae4636689de09341fb";
+// Using Environment Variable for security
+const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY || "694406d04ca241ae4636689de09341fb";
 
 // --- FIXED ASSETS ---
 const ASSETS = {
@@ -45,7 +46,7 @@ export default function KalakariBoutique() {
   const [form, setForm] = useState({ name: '', email: '', mobile: '', house: '', city: '', pin: '' });
 
   // --- FIREBASE STATES ---
-  const [archiveImages, setArchiveImages] = useState<string[]>([]);
+  const [archiveItems, setArchiveItems] = useState<{id: string, url: string}[]>([]);
   const [uploading, setUploading] = useState(false);
 
   // --- FETCH ARCHIVE FROM FIREBASE ---
@@ -57,8 +58,14 @@ export default function KalakariBoutique() {
       try {
         const data = snapshot.val();
         if (data) {
-          const urls = Object.values(data) as string[];
-          setArchiveImages(urls.reverse()); // Newest first
+          // Mapping ID and URL so we can delete by ID later
+          const items = Object.entries(data).map(([id, url]) => ({
+            id,
+            url: url as string
+          }));
+          setArchiveItems(items.reverse()); // Newest first
+        } else {
+          setArchiveItems([]);
         }
       } catch (error) {
         console.error("Error fetching archive:", error);
@@ -68,30 +75,40 @@ export default function KalakariBoutique() {
     return () => unsubscribe();
   }, []);
 
-  // --- UPDATED UPLOAD HANDLER (USING IMGBB) ---
+  // --- DELETE HANDLER ---
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to remove this piece from the archive?")) return;
+
+    try {
+      const itemRef = ref(db, `archive/${id}`);
+      await remove(itemRef);
+      alert("Removed from Archive.");
+    } catch (error) {
+      console.error("Delete failed:", error);
+      alert("Delete failed. Check your database permissions.");
+    }
+  };
+
+  // --- UPLOAD HANDLER ---
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
     try {
-      // 1. Prepare Form Data for ImgBB
       const formData = new FormData();
       formData.append("image", file);
 
-      // 2. Post to ImgBB
       const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
         method: "POST",
         body: formData,
       });
       
       const result = await response.json();
-      
       if (!result.success) throw new Error("ImgBB Upload Failed");
       
       const url = result.data.url;
       
-      // 3. Save reference in Firebase Realtime Database
       const newArchiveRef = push(ref(db, 'archive'));
       await set(newArchiveRef, url);
       
@@ -279,11 +296,11 @@ export default function KalakariBoutique() {
         {view === 'samples' && (
           <motion.section key="samples" className="max-w-7xl mx-auto py-24 px-6 text-center">
             <h2 className="font-serif text-7xl italic mb-16 underline decoration-stone-200">The Archive</h2>
-            {archiveImages.length > 0 ? (
+            {archiveItems.length > 0 ? (
                 <div className="columns-1 sm:columns-2 lg:columns-3 gap-8 space-y-8">
-                {archiveImages.map((img, i) => (
-                    <div key={i} className="rounded-3xl overflow-hidden shadow-xl border border-stone-100">
-                        <img src={img} className="w-full object-cover" alt="Archive work" />
+                {archiveItems.map((item) => (
+                    <div key={item.id} className="rounded-3xl overflow-hidden shadow-xl border border-stone-100">
+                        <img src={item.url} className="w-full object-cover" alt="Archive work" />
                     </div>
                 ))}
                 </div>
@@ -337,22 +354,41 @@ export default function KalakariBoutique() {
         )}
 
         {view === 'account' && (
-            <div className="max-w-3xl mx-auto py-32 px-6 text-center">
+            <div className="max-w-5xl mx-auto py-32 px-6 text-center">
                 <h2 className="font-serif text-7xl italic mb-10">My Space</h2>
                 
-                {/* ADMIN UPLOAD PANEL */}
-                <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-stone-100 mb-10">
-                    <h4 className="font-serif text-2xl italic mb-6">Admin: Add to Archive</h4>
-                    <label className={`flex flex-col items-center justify-center border-2 border-dashed border-stone-200 p-10 rounded-2xl cursor-pointer hover:bg-stone-50 transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                        {uploading ? <Loader2 className="animate-spin text-stone-400" size={40} /> : <Upload className="text-stone-300 mb-4" size={40} />}
-                        <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-                            {uploading ? 'Uploading Piece...' : 'Tap to Upload Sample'}
-                        </span>
-                        <input type="file" className="hidden" accept="image/*" onChange={handleUpload} />
-                    </label>
+                <div className="grid md:grid-cols-2 gap-10">
+                  {/* ADMIN UPLOAD PANEL */}
+                  <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-stone-100 flex flex-col justify-center">
+                      <h4 className="font-serif text-2xl italic mb-6">Admin: Add to Archive</h4>
+                      <label className={`flex flex-col items-center justify-center border-2 border-dashed border-stone-200 p-10 rounded-2xl cursor-pointer hover:bg-stone-50 transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                          {uploading ? <Loader2 className="animate-spin text-stone-400" size={40} /> : <Upload className="text-stone-300 mb-4" size={40} />}
+                          <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
+                              {uploading ? 'Uploading Piece...' : 'Tap to Upload Sample'}
+                          </span>
+                          <input type="file" className="hidden" accept="image/*" onChange={handleUpload} />
+                      </label>
+                  </div>
+
+                  {/* ADMIN MANAGE PANEL */}
+                  <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-stone-100">
+                      <h4 className="font-serif text-2xl italic mb-6">Manage Archive</h4>
+                      <div className="h-64 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                        {archiveItems.length > 0 ? archiveItems.map(item => (
+                          <div key={item.id} className="flex items-center justify-between bg-stone-50 p-4 rounded-2xl">
+                            <img src={item.url} className="w-12 h-12 object-cover rounded-lg" />
+                            <button onClick={() => handleDelete(item.id)} className="text-stone-300 hover:text-red-500 transition-colors">
+                              <Trash2 size={20} />
+                            </button>
+                          </div>
+                        )) : (
+                          <p className="text-stone-300 text-[10px] uppercase font-black py-20">No items to manage</p>
+                        )}
+                      </div>
+                  </div>
                 </div>
 
-                <p className="text-[10px] font-black uppercase tracking-[0.8em] text-stone-300">Tracking & Authentication system live soon.</p>
+                <p className="mt-10 text-[10px] font-black uppercase tracking-[0.8em] text-stone-300">Tracking & Authentication system live soon.</p>
             </div>
         )}
         
