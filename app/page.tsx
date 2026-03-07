@@ -51,49 +51,52 @@ export default function KalakariBoutique() {
   const [currentUser, setCurrentUser] = useState<any>(null); // Placeholder for Supabase User
   const [isAdmin, setIsAdmin] = useState(false);
   const [authLoading, setAuthLoading] = useState(false); // Set to false since Firebase is removed
+  
+const fetchArchive = async () => {
+    const { data, error } = await supabase
+      .from('archive')
+      .select('*')
+      .order('id', { ascending: false });
 
-  // 2. This replaces your --- SUPABASE/AUTH PLACEHOLDER ---
+    if (error) {
+      console.error("Error fetching archive:", error.message);
+    } else {
+      setArchiveItems(data || []);
+    }
+  };
+
   useEffect(() => {
-    // Check if a user is already logged in when the page first loads
+    fetchArchive();
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setCurrentUser(session.user);
         setIsAdmin(ADMIN_EMAILS.includes(session.user.email ?? ""));
       }
+      setAuthLoading(false);
     });
 
-    // Listen for changes (Login, Logout, Sign Up)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setCurrentUser(session?.user ?? null);
       setIsAdmin(ADMIN_EMAILS.includes(session?.user?.email ?? ""));
-      
-      // If the user logs out, send them back to the home view
-      if (!session) {
-        setView('home');
-      }
+      if (!session) setView('home');
     });
 
-    // Clean up the listener when the component unmounts
     return () => subscription.unsubscribe();
   }, []);
 
-  // 3. This replaces your old handleLogin placeholder
   const handleLogin = async () => {
-    console.log("Supabase Login Triggered");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        // This tells Google to send the user back to your site after login
         redirectTo: window.location.origin, 
       },
     });
-    if (error) {
-      console.error("Login Error:", error.message);
-      alert("Error logging in with Google");
-    }
+    if (error) alert("Error logging in: " + error.message);
   };
 
   const handleLogout = async () => {
+    await supabase.auth.signOut();
     setCurrentUser(null);
     setIsAdmin(false);
     setView('home');
@@ -101,52 +104,53 @@ export default function KalakariBoutique() {
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  if (!isAdmin) return alert("Access Denied: Admins Only.");
-  const file = e.target.files?.[0];
-  if (!file) return;
+    if (!isAdmin) return alert("Admins Only.");
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  setUploading(true);
-  try {
-    const formData = new FormData();
-    formData.append("image", file);
-    
-    // Upload to ImgBB
-    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-      method: "POST",
-      body: formData,
-    });
-    const result = await response.json();
-
-    if (result.success) {
-      const imageUrl = result.data.url;
-
-      // SAVE TO SUPABASE ARCHIVE TABLE
-      const { data, error } = await supabase
-        .from('archive')
-        .insert([{ url: imageUrl }])
-        .select();
-
-      if (error) throw error;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
       
-      setArchiveItems([data[0], ...archiveItems]);
-      alert("Image saved to Archive!");
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: "POST",
+        body: formData,
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        const imageUrl = result.data.url;
+        const { data, error } = await supabase
+          .from('archive')
+          .insert([{ url: imageUrl }])
+          .select();
+
+        if (error) throw error;
+        setArchiveItems([data[0], ...archiveItems]);
+        alert("Saved to Archive!");
+      }
+    } catch (error: any) {
+      alert("Upload failed: " + error.message);
+    } finally {
+      setUploading(false);
     }
-  } catch (error: any) {
-    alert("Upload failed: " + error.message);
-  } finally {
-    setUploading(false);
-  }
-};
+  };
 
   const handleDelete = async (id: string) => {
     if (!isAdmin) return alert("Admins only.");
     if (window.confirm("Remove this piece from Archive?")) {
-      // Placeholder for Supabase Delete
-      setArchiveItems(archiveItems.filter(item => item.id !== id));
+      const { error } = await supabase.from('archive').delete().eq('id', id);
+      if (error) {
+        alert("Error: " + error.message);
+      } else {
+        setArchiveItems(archiveItems.filter(item => item.id !== id));
+      }
     }
   };
 
   const navigateTo = (screen: any) => { setView(screen); window.scrollTo(0,0); };
+
   const addToBag = (item: any) => {
     setCart([...cart, { ...item, id: Math.random().toString(36).substr(2, 9) }]);
     setSelectedReadymade(null);
@@ -154,12 +158,11 @@ export default function KalakariBoutique() {
   };
 
   const sendWhatsApp = () => {
-    const items = cart.map(i => `*${i.name}*\n${i.type === 'custom' ? `Fabric: ${i.fabric}\nWork: ${i.work}\nColor: ${i.color}` : `Color: ${i.color}${i.size ? `\nSize: ${i.size}` : ''}`}`).join('\n\n');
-    const msg = `*NEW ORDER - KALAKARI*\n\n*Customer:* ${form.name}\n*Ph:* ${form.mobile}\n*Address:* ${form.house}, ${form.city} ${form.pin}\n\n*Items:*\n${items}`;
+    const items = cart.map(i => `*${i.name}*\n${i.type === 'custom' ? `Fabric: ${i.fabric}\nWork: ${i.work}` : `Color: ${i.color}`}`).join('\n\n');
+    const msg = `*NEW ORDER - KALAKARI*\n\n*Customer:* ${form.name}\n*Ph:* ${form.mobile}\n*Address:* ${form.house}\n\n*Items:*\n${items}`;
     window.open(`https://wa.me/917991464638?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
-  // --- UI RENDERING ---
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">
@@ -174,11 +177,8 @@ export default function KalakariBoutique() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="font-serif text-7xl md:text-9xl italic mb-4 text-black tracking-tighter">KALAKARI</h1>
           <p className="text-stone-400 mb-12 font-black uppercase tracking-[0.5em] text-[10px]">Ancestral Threads • Modern Silhouettes</p>
-          <button 
-            onClick={handleLogin}
-            className="group bg-black text-white px-10 py-5 rounded-full font-black uppercase text-[10px] tracking-widest flex items-center gap-4 hover:scale-105 transition-all shadow-2xl"
-          >
-            Enter Studio with Google <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          <button onClick={handleLogin} className="bg-black text-white px-10 py-5 rounded-full font-black uppercase text-[10px] tracking-widest flex items-center gap-4 hover:scale-105 transition-all shadow-2xl">
+            Enter Studio with Google <ChevronRight size={16} />
           </button>
         </motion.div>
       </div>
