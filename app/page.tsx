@@ -1,20 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { supabase } from '@/app/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShoppingBag, User, X, Instagram, Facebook, 
   ChevronRight, ArrowLeft, Send, Trash2, Palette, Ruler, Mail, Phone, Upload, Loader2, LogOut
 } from 'lucide-react';
-
-import { 
-  signInWithPopup, 
-  signOut, 
-  onAuthStateChanged, 
-  User as FirebaseUser 
-} from "firebase/auth";
-import { auth, googleProvider, db } from './lib/firebase';
-import { ref, onValue, push, set, remove } from 'firebase/database';
 
 // --- CONFIGURATION ---
 const IMGBB_API_KEY = "694406d04ca241ae4636689de09341fb";
@@ -56,86 +48,101 @@ export default function KalakariBoutique() {
 
   const [archiveItems, setArchiveItems] = useState<{id: string, url: string}[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null); // Placeholder for Supabase User
   const [isAdmin, setIsAdmin] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(false); // Set to false since Firebase is removed
 
-  // --- REFINED AUTH LISTENER ---
+  // 2. This replaces your --- SUPABASE/AUTH PLACEHOLDER ---
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setCurrentUser(user);
-        setIsAdmin(ADMIN_EMAILS.includes(user.email || ""));
-      } else {
-        setCurrentUser(null);
-        setIsAdmin(false);
+    // Check if a user is already logged in when the page first loads
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setCurrentUser(session.user);
+        setIsAdmin(ADMIN_EMAILS.includes(session.user.email ?? ""));
       }
-      setAuthLoading(false);
     });
-    return () => unsubscribe();
+
+    // Listen for changes (Login, Logout, Sign Up)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user ?? null);
+      setIsAdmin(ADMIN_EMAILS.includes(session?.user?.email ?? ""));
+      
+      // If the user logs out, send them back to the home view
+      if (!session) {
+        setView('home');
+      }
+    });
+
+    // Clean up the listener when the component unmounts
+    return () => subscription.unsubscribe();
   }, []);
 
-  // --- FETCH ARCHIVE ---
-  useEffect(() => {
-    if (!db || !currentUser) return;
-    const archiveRef = ref(db, 'archive');
-    const unsubscribe = onValue(archiveRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const items = Object.entries(data).map(([id, url]) => ({ id, url: url as string }));
-        setArchiveItems(items.reverse());
-      } else {
-        setArchiveItems([]);
-      }
-    });
-    return () => unsubscribe();
-  }, [currentUser]);
-
-  // --- HANDLERS ---
+  // 3. This replaces your old handleLogin placeholder
   const handleLogin = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error) {
-      console.error("Login failed:", error);
+    console.log("Supabase Login Triggered");
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        // This tells Google to send the user back to your site after login
+        redirectTo: window.location.origin, 
+      },
+    });
+    if (error) {
+      console.error("Login Error:", error.message);
+      alert("Error logging in with Google");
     }
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    setCurrentUser(null);
+    setIsAdmin(false);
     setView('home');
     setColType(null);
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!isAdmin) return alert("Access Denied: Admins Only.");
-    const file = e.target.files?.[0];
-    if (!file) return;
+  if (!isAdmin) return alert("Access Denied: Admins Only.");
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-        method: "POST",
-        body: formData,
-      });
-      const result = await response.json();
-      if (result.success) {
-        const newArchiveRef = push(ref(db, 'archive'));
-        await set(newArchiveRef, result.data.url);
-        alert("Added to Archive!");
-      }
-    } catch (error) {
-      alert("Upload failed.");
-    } finally {
-      setUploading(false);
+  setUploading(true);
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+    
+    // Upload to ImgBB
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+      method: "POST",
+      body: formData,
+    });
+    const result = await response.json();
+
+    if (result.success) {
+      const imageUrl = result.data.url;
+
+      // SAVE TO SUPABASE ARCHIVE TABLE
+      const { data, error } = await supabase
+        .from('archive')
+        .insert([{ url: imageUrl }])
+        .select();
+
+      if (error) throw error;
+      
+      setArchiveItems([data[0], ...archiveItems]);
+      alert("Image saved to Archive!");
     }
-  };
+  } catch (error: any) {
+    alert("Upload failed: " + error.message);
+  } finally {
+    setUploading(false);
+  }
+};
 
   const handleDelete = async (id: string) => {
     if (!isAdmin) return alert("Admins only.");
     if (window.confirm("Remove this piece from Archive?")) {
-      await remove(ref(db, `archive/${id}`));
+      // Placeholder for Supabase Delete
+      setArchiveItems(archiveItems.filter(item => item.id !== id));
     }
   };
 
@@ -152,7 +159,7 @@ export default function KalakariBoutique() {
     window.open(`https://wa.me/917991464638?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
-  // --- AUTH GATE LOGIC ---
+  // --- UI RENDERING ---
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">
@@ -393,7 +400,7 @@ export default function KalakariBoutique() {
             ) : (
               <div className="bg-white p-16 rounded-[4rem] border-2 border-stone-100 shadow-xl max-w-xl mx-auto text-center">
                 <User className="text-stone-300 mx-auto mb-8" size={48} />
-                <h3 className="text-3xl font-serif mb-2">{currentUser?.displayName}</h3>
+                <h3 className="text-3xl font-serif mb-2">{currentUser?.displayName || 'User'}</h3>
                 <p className="text-stone-400 mb-10">{currentUser?.email}</p>
               </div>
             )}
