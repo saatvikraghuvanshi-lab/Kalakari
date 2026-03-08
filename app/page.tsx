@@ -129,7 +129,6 @@ export default function KalaKariStudio() {
     navigateTo('home');
   };
 
-  // --- YOUR ORIGINAL ACTIONS ---
   const navigateTo = (v: string) => {
     setView(v);
     window.scrollTo(0, 0);
@@ -155,17 +154,16 @@ export default function KalaKariStudio() {
     window.open(`https://wa.me/917991464638?text=${encodeURIComponent(text)}`);
   };
 
-  // S04: LOADING STATE
+  // --- RENDERING GATE ---
   if (loading) return null;
 
-  // S05: LOGIN GATE
   if (!user) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-[#FDFBF7] gap-8">
-         <h1 className="font-serif text-6xl italic tracking-tighter">KalaKari</h1>
+         <h1 className="font-serif text-6xl italic tracking-tighter text-[#1A1A1A]">KalaKari</h1>
          <button 
            onClick={login} 
-           className="px-10 py-4 border border-black text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all"
+           className="px-10 py-4 border border-[#1A1A1A] text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] hover:bg-black hover:text-[#FDFBF7] transition-all"
          >
            Enter Studio with Google
          </button>
@@ -173,7 +171,6 @@ export default function KalaKariStudio() {
     );
   }
 
-  // --- EVERYTHING BELOW IS 100% UNTOUCHED ORIGINAL CODE ---
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#1A1A1A] font-sans selection:bg-stone-200">
       
@@ -181,56 +178,57 @@ export default function KalaKariStudio() {
       <nav className="relative w-full z-[100] px-12 py-12 flex justify-between items-center bg-transparent">
         <span 
           onClick={() => {navigateTo('home'); setColType(null); setCustomCat(null); setShowCollections(false);}} 
-          className="font-serif text-5xl italic cursor-pointer tracking-tighter"
+          className="font-serif text-5xl italic cursor-pointer tracking-tighter text-[#1A1A1A]"
         >
           KalaKari
         </span>
-       {/* --- DESKTOP NAVIGATION & COLLECTIONS DROPDOWN --- */}
-<div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex gap-16 text-[10px] font-bold uppercase tracking-[0.4em] text-stone-500">
-  <div className="relative">
-    <button 
-      onClick={() => setShowCollections(!showCollections)} 
-      className={`${showCollections ? 'text-black' : 'hover:text-black'} transition-colors`}
-    >
-      Collections
-    </button>
-    <AnimatePresence>
-      {showCollections && (
-        <>
-          <div className="fixed inset-0 z-[-1]" onClick={() => setShowCollections(false)} />
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            exit={{ opacity: 0, y: -5 }}
-            className="absolute left-1/2 -translate-x-1/2 mt-6 flex gap-4 bg-white p-4 border border-stone-100 shadow-[0_20px_40px_rgba(0,0,0,0.08)] rounded-xl z-[110]"
-          >
-            <button 
-              onClick={() => { setColType('readymade'); setView('collections'); setShowCollections(false); }}
-              className="group flex flex-col items-center gap-1 p-3 hover:bg-stone-50 transition-all"
-            >
-              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black group-hover:scale-105 transition-transform">Readymade</span>
-              <span className="text-[7px] tracking-[0.1em] text-stone-400 uppercase">Studio Selection</span>
-            </button>
 
-            <div className="w-[1px] bg-stone-100 self-stretch my-1" />
-
+        {/* --- DESKTOP NAVIGATION & COLLECTIONS DROPDOWN --- */}
+        <div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex gap-16 text-[10px] font-bold uppercase tracking-[0.4em] text-stone-500">
+          <div className="relative">
             <button 
-              onClick={() => { setColType('custom'); setView('collections'); setShowCollections(false); }}
-              className="group flex flex-col items-center gap-1 p-3 hover:bg-stone-50 transition-all"
+              onClick={() => setShowCollections(!showCollections)} 
+              className={`${showCollections ? 'text-black' : 'hover:text-black'} transition-colors`}
             >
-              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black group-hover:scale-105 transition-transform">Custom</span>
-              <span className="text-[7px] tracking-[0.1em] text-stone-400 uppercase">Bespoke Craft</span>
+              Collections
             </button>
-            
-            <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rotate-45 border-l border-t border-stone-100"></div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  </div>
-  <button onClick={() => navigateTo('samples')} className="hover:text-black transition-colors">The Archive</button>
-  <button onClick={() => navigateTo('story')} className="hover:text-black transition-colors">Our Story</button>
-</div>
+            <AnimatePresence>
+              {showCollections && (
+                <>
+                  <div className="fixed inset-0 z-[-1]" onClick={() => setShowCollections(false)} />
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: -5 }}
+                    className="absolute left-1/2 -translate-x-1/2 mt-6 flex gap-4 bg-white p-4 border border-stone-100 shadow-[0_20px_40px_rgba(0,0,0,0.08)] rounded-xl z-[110]"
+                  >
+                    <button 
+                      onClick={() => { setColType('readymade'); setView('collections'); setShowCollections(false); }}
+                      className="group flex flex-col items-center gap-1 p-3 hover:bg-stone-50 transition-all"
+                    >
+                      <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black group-hover:scale-105 transition-transform">Readymade</span>
+                      <span className="text-[7px] tracking-[0.1em] text-stone-400 uppercase">Studio Selection</span>
+                    </button>
+
+                    <div className="w-[1px] bg-stone-100 self-stretch my-1" />
+
+                    <button 
+                      onClick={() => { setColType('custom'); setView('collections'); setShowCollections(false); }}
+                      className="group flex flex-col items-center gap-1 p-3 hover:bg-stone-50 transition-all"
+                    >
+                      <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black group-hover:scale-105 transition-transform">Custom</span>
+                      <span className="text-[7px] tracking-[0.1em] text-stone-400 uppercase">Bespoke Craft</span>
+                    </button>
+                    
+                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rotate-45 border-l border-t border-stone-100"></div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+          <button onClick={() => navigateTo('samples')} className="hover:text-black transition-colors">The Archive</button>
+          <button onClick={() => navigateTo('story')} className="hover:text-black transition-colors">Our Story</button>
+        </div>
 
         <div className="flex items-center gap-10">
           <button onClick={() => navigateTo('account')} className="hover:opacity-60 transition-opacity">
@@ -246,6 +244,7 @@ export default function KalaKariStudio() {
           </button>
         </div>
       </nav>
+
       <AnimatePresence mode="wait">
         {/* --- HOME VIEW --- */}
         {view === 'home' && (
@@ -272,7 +271,7 @@ export default function KalaKariStudio() {
             <div className="flex justify-center">
               <button 
                 onClick={() => setShowCollections(true)} 
-                className="border border-[#1A1A1A] px-24 py-6 rounded-full text-[10px] uppercase tracking-[0.4em] font-bold hover:bg-black hover:text-[#FDFBF7] transition-all"
+                className="border border-[#1A1A1A] px-24 py-6 rounded-full text-[10px] uppercase tracking-[0.4em] font-bold hover:bg-black hover:text-[#FDFBF7] transition-all text-[#1A1A1A]"
               >
                 Explore Collections
               </button>
@@ -379,6 +378,7 @@ export default function KalaKariStudio() {
             </div>
           </motion.section>
         )}
+
         {/* --- ARCHIVE / SAMPLES --- */}
         {view === 'samples' && (
           <motion.section key="samples" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-screen-2xl mx-auto py-24 px-10 text-center">
@@ -405,36 +405,35 @@ export default function KalaKariStudio() {
         )}
 
         {/* --- STORY SECTION --- */}
-{view === 'story' && (
-  <motion.section key="story" className="max-w-4xl mx-auto py-32 px-10 text-center">
-    <button onClick={() => navigateTo('home')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 hover:text-black mx-auto">
-      <ArrowLeft size={18}/> Back
-    </button>
-    <h2 className="font-serif text-8xl italic mb-16 tracking-tighter">Our Story</h2>
-    <div className="space-y-16">
-      <div className="text-2xl font-light leading-relaxed text-stone-600 space-y-8">
-        <p>
-          KalaKari Studio, based in Lucknow, India, is a design house dedicated to heritage textile craftsmanship. 
-          We blend ancestral threads with modern silhouettes, creating unique bespoke and luxury prêt pieces.
-        </p>
-        <p>
-          Rooted in the heart of Awadh, our work is a tribute to the silent hands that have kept the art 
-          of Chikan and Zardosi alive for generations. We do not just design garments; we curate heirlooms 
-          that carry the whisper of the artisan’s needle and the weight of history.
-        </p>
-        <p>
-          Each piece is a conscious dialogue between the past and the present—where raw silks meet 
-          contemporary geometry, and every stitch tells a story of patience, precision, and passion.
-        </p>
-      </div>
-      <div className="h-[1px] w-20 bg-stone-200 mx-auto" />
-      <p className="text-xs leading-loose tracking-[0.5em] text-stone-400 uppercase">
-        Woven Stories • Tailored Dreams
-      </p>
-    </div>
-  </motion.section>
-)}
-      
+        {view === 'story' && (
+          <motion.section key="story" className="max-w-4xl mx-auto py-32 px-10 text-center">
+            <button onClick={() => navigateTo('home')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 hover:text-black mx-auto">
+              <ArrowLeft size={18}/> Back
+            </button>
+            <h2 className="font-serif text-8xl italic mb-16 tracking-tighter">Our Story</h2>
+            <div className="space-y-16">
+              <div className="text-2xl font-light leading-relaxed text-stone-600 space-y-8">
+                <p>
+                  KalaKari Studio, based in Lucknow, India, is a design house dedicated to heritage textile craftsmanship. 
+                  We blend ancestral threads with modern silhouettes, creating unique bespoke and luxury prêt pieces.
+                </p>
+                <p>
+                  Rooted in the heart of Awadh, our work is a tribute to the silent hands that have kept the art 
+                  of Chikan and Zardosi alive for generations. We do not just design garments; we curate heirlooms 
+                  that carry the whisper of the artisan’s needle and the weight of history.
+                </p>
+                <p>
+                  Each piece is a conscious dialogue between the past and the present—where raw silks meet 
+                  contemporary geometry, and every stitch tells a story of patience, precision, and passion.
+                </p>
+              </div>
+              <div className="h-[1px] w-20 bg-stone-200 mx-auto" />
+              <p className="text-xs leading-loose tracking-[0.5em] text-stone-400 uppercase">
+                Woven Stories • Tailored Dreams
+              </p>
+            </div>
+          </motion.section>
+        )}
 
         {/* --- SHOPPING BAG --- */}
         {view === 'cart' && (
@@ -549,6 +548,7 @@ export default function KalaKariStudio() {
             </div>
           </motion.section>
         )}
+
         {/* --- ACCOUNT VIEW --- */}
         {view === 'account' && (
           <motion.section key="account" className="max-w-6xl mx-auto py-32 px-10">
