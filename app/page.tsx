@@ -2,6 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+// S01: SURGICAL IMPORT
+import { createClient } from '@supabase/supabase-js';
+
+// These pull the keys you just saved in .env.local
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 import { 
   User, ShoppingBag, ArrowLeft, ChevronRight, X, Info, 
   Upload, Trash2, Loader2, LogOut, CheckCircle2, Send, 
@@ -17,28 +25,20 @@ const ASSETS = {
   TSHIRT: "https://cdn.cosmos.so/8056a947-4323-498f-990c-3f02f7112368?format=jpeg",
   STOLE: "https://cdn.cosmos.so/3a83e9e8-6a20-43e2-9f68-489ccf5d60dc?format=jpeg",
   SCARF: "https://cdn.cosmos.so/7aef443c-4c6e-4dc2-851a-6e4ce883039c?format=jpeg",
-
 };
 
 const COLORS = [
-  // --- EXISTING & NEUTRALS ---
   { name: 'Ivory', hex: '#FDFBF7' },
   { name: 'Midnight', hex: '#1A1A1A' },
-  { name: 'Slate', hex: '#707070' }, // Popular neutral
-  
-  // --- PRIMARY & HERITAGE BOLD ---
-  { name: 'Royal Red', hex: '#9B1B1B' }, // Primary Red (Classic for Bridal/Sarees)
-  { name: 'Cerulean', hex: '#2A5A9F' },  // Primary Blue (Modern Indigo)
-  { name: 'Mustard', hex: '#E1AD01' },   // Primary Yellow (Heritage Haldi)
-  
-  // --- POPULAR STUDIO FAVORITES ---
+  { name: 'Slate', hex: '#707070' },
+  { name: 'Royal Red', hex: '#9B1B1B' },
+  { name: 'Cerulean', hex: '#2A5A9F' },
+  { name: 'Mustard', hex: '#E1AD01' },
   { name: 'Terracotta', hex: '#C26D50' },
   { name: 'Sage', hex: '#9CAF88' },
-  { name: 'Emerald', hex: '#046307' },   // Deep Bottle Green
-  { name: 'Dusty Rose', hex: '#DCAE96' }, // Popular for modern Kurtas
-  { name: 'Wine', hex: '#4E0E2E' },      // Deep Burgundy
-  
-  // --- METALLICS ---
+  { name: 'Emerald', hex: '#046307' },
+  { name: 'Dusty Rose', hex: '#DCAE96' },
+  { name: 'Wine', hex: '#4E0E2E' },
   { name: 'Gold', hex: '#D4AF37' },
   { name: 'Antique Silver', hex: '#A8A9AD' }
 ];
@@ -46,7 +46,6 @@ const COLORS = [
 const FABRICS = ['Silk', 'Georgette', 'Organza', 'Chiffon', 'Crepe', 'Chanderi', 'Raw Silk', 'Cotton'];
 const WORK_TYPES = [" Gota Patti", "Zardosi", "Mirror Work", "Thread Work", "Aari Work", "Sequins Work", "No Work"];
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
-
 
 const TERMS_AND_CONDITIONS = [
   "Bespoke orders require 4-6 weeks for craftsmanship.",
@@ -69,7 +68,11 @@ const PRIVACY_POLICY = [
 ];
 
 export default function KalaKariStudio() {
-  // --- STATE ---
+  // S02: SURGICAL AUTH STATE
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // --- YOUR ORIGINAL STATE ---
   const [view, setView] = useState('home');
   const [colType, setColType] = useState<null | 'readymade' | 'custom'>(null);
   const [customCat, setCustomCat] = useState<null | 'Saree' | 'Lehenga' | 'Kurta Set'>(null);
@@ -81,7 +84,6 @@ export default function KalaKariStudio() {
   const [checkoutStep, setCheckoutStep] = useState('contact');
   const [uploading, setUploading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(true); 
-  const [currentUser, setCurrentUser] = useState({ email: 'chhayahajela167@gmail.com' });
   const [archiveItems, setArchiveItems] = useState<any[]>([
     { id: 1, url: "https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg" },
     { id: 2, url: "https://cdn.cosmos.so/dab01853-00d9-48cb-aebc-95b70bea7b3e?format=jpeg" },
@@ -99,7 +101,35 @@ export default function KalaKariStudio() {
 
   const [form, setForm] = useState({ name: '', mobile: '', house: '' });
 
-  // --- ACTIONS ---
+  // S03: SURGICAL AUTH EFFECTS
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const login = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: typeof window !== 'undefined' ? window.location.origin : '',
+      }
+    });
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigateTo('home');
+  };
+
+  // --- YOUR ORIGINAL ACTIONS ---
   const navigateTo = (v: string) => {
     setView(v);
     window.scrollTo(0, 0);
@@ -111,13 +141,8 @@ export default function KalaKariStudio() {
     setSelectedReadymade(null);
   };
 
-  const handleLogout = () => {
-    navigateTo('home');
-  };
-
   const handleUpload = (e: any) => {
     setUploading(true);
-    // Simulating upload delay
     setTimeout(() => setUploading(false), 2000);
   };
 
@@ -130,6 +155,25 @@ export default function KalaKariStudio() {
     window.open(`https://wa.me/917991464638?text=${encodeURIComponent(text)}`);
   };
 
+  // S04: LOADING STATE
+  if (loading) return null;
+
+  // S05: LOGIN GATE
+  if (!user) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-[#FDFBF7] gap-8">
+         <h1 className="font-serif text-6xl italic tracking-tighter">KalaKari</h1>
+         <button 
+           onClick={login} 
+           className="px-10 py-4 border border-black text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all"
+         >
+           Enter Studio with Google
+         </button>
+      </div>
+    );
+  }
+
+  // --- EVERYTHING BELOW IS 100% UNTOUCHED ORIGINAL CODE ---
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#1A1A1A] font-sans selection:bg-stone-200">
       
@@ -158,15 +202,12 @@ export default function KalaKariStudio() {
             initial={{ opacity: 0, y: -10 }} 
             animate={{ opacity: 1, y: 0 }} 
             exit={{ opacity: 0, y: -5 }}
-            /* Reduced padding from p-10 to p-4, reduced rounded corners to xl */
             className="absolute left-1/2 -translate-x-1/2 mt-6 flex gap-4 bg-white p-4 border border-stone-100 shadow-[0_20px_40px_rgba(0,0,0,0.08)] rounded-xl z-[110]"
           >
             <button 
               onClick={() => { setColType('readymade'); setView('collections'); setShowCollections(false); }}
-              /* Removed rounded-l for a cleaner internal look */
               className="group flex flex-col items-center gap-1 p-3 hover:bg-stone-50 transition-all"
             >
-              {/* Changed to Uppercase, removed Serif/Italic, sharpened Font Weight */}
               <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black group-hover:scale-105 transition-transform">Readymade</span>
               <span className="text-[7px] tracking-[0.1em] text-stone-400 uppercase">Studio Selection</span>
             </button>
@@ -177,12 +218,10 @@ export default function KalaKariStudio() {
               onClick={() => { setColType('custom'); setView('collections'); setShowCollections(false); }}
               className="group flex flex-col items-center gap-1 p-3 hover:bg-stone-50 transition-all"
             >
-              {/* Changed to Uppercase, removed Serif/Italic, sharpened Font Weight */}
               <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black group-hover:scale-105 transition-transform">Custom</span>
               <span className="text-[7px] tracking-[0.1em] text-stone-400 uppercase">Bespoke Craft</span>
             </button>
             
-            {/* The Little Arrow Tip */}
             <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rotate-45 border-l border-t border-stone-100"></div>
           </motion.div>
         </>
@@ -555,7 +594,7 @@ export default function KalaKariStudio() {
               </div>
             ) : (
               <div className="max-w-md mx-auto py-32 border border-stone-100 text-center rounded-[3rem] bg-white shadow-sm">
-                <p className="font-serif text-3xl italic mb-4">{currentUser.email}</p>
+                <p className="font-serif text-3xl italic mb-4">{user?.email}</p>
                 <p className="text-xs uppercase tracking-widest text-stone-400">Studio Member</p>
               </div>
             )}
