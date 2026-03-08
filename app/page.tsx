@@ -484,22 +484,44 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
       </AnimatePresence>
-
-      {/* --- FOOTER --- */}
+{/* --- FOOTER --- */}
       <footer className="px-10 py-40 bg-[#FDFBF7] border-t border-stone-100 text-center">
+        {/* Social Icons */}
         <div className="flex justify-center gap-20 mb-24 text-stone-300">
-          <a href="https://instagram.com/hajelachhaya" target="_blank" className="hover:text-black transition-all hover:scale-110"><Instagram size={28} strokeWidth={1.2} /></a>
-          <a href="https://facebook.com/chhaya.hajela" target="_blank" className="hover:text-black transition-all hover:scale-110"><Facebook size={28} strokeWidth={1.2} /></a>
-          <a href="mailto:contact@kalakari.com" className="hover:text-black transition-all hover:scale-110"><Mail size={28} strokeWidth={1.2} /></a>
+          <a href="https://instagram.com/hajelachhaya" target="_blank" className="hover:text-black transition-all hover:scale-110">
+            <Instagram size={28} strokeWidth={1.2} />
+          </a>
+          <a href="https://facebook.com/chhaya.hajela" target="_blank" className="hover:text-black transition-all hover:scale-110">
+            <Facebook size={28} strokeWidth={1.2} />
+          </a>
+          <a href="mailto:chhayahajela167@gmail.com" className="hover:text-black transition-all hover:scale-110">
+            <Mail size={28} strokeWidth={1.2} />
+          </a>
         </div>
-        <div className="flex flex-col md:flex-row justify-center gap-12 md:gap-24 mb-16 text-xs font-medium uppercase tracking-[0.4em] text-stone-400">
+
+        {/* Footer Navigation & Support */}
+        <div className="flex flex-col md:flex-row justify-center items-start md:items-center gap-12 md:gap-24 mb-16 text-xs font-medium uppercase tracking-[0.4em] text-stone-400">
           <button onClick={() => navigateTo('terms')} className="hover:text-black transition-colors">Terms & Conditions</button>
           <button onClick={() => navigateTo('policy')} className="hover:text-black transition-colors">Privacy Policy</button>
-          <button onClick={() => navigateTo('story')} className="hover:text-black transition-colors">Our Story</button>
+          
+          <div className="flex flex-col items-center md:items-start gap-4">
+            <span className="text-black font-bold tracking-[0.4em]">Customer Support</span>
+            <div className="flex flex-col gap-2 text-[10px] text-stone-500 tracking-widest lowercase">
+              <a href="tel:+917991464638" className="hover:text-black transition-colors">+91 7991464638</a>
+              <a href="tel:+919589129241" className="hover:text-black transition-colors">+91 9589129241</a>
+              <a href="tel:+919301661160" className="hover:text-black transition-colors">+91 9301661160</a>
+            </div>
+          </div>
         </div>
+
+        {/* Brand Marking */}
         <div className="space-y-4">
-          <p className="text-[10px] font-medium uppercase tracking-[1.2em] text-stone-300">KALAKARI STUDIO • LUCKNOW • 2026</p>
-          <p className="text-[8px] uppercase tracking-widest text-stone-200">Handcrafted with Heritage • Built on Supabase</p>
+          <p className="text-[10px] font-medium uppercase tracking-[1.2em] text-stone-300">
+             © 2026 KALAKARI STUDIO • LUCKNOW 
+          </p>
+          <p className="text-[8px] uppercase tracking-widest text-stone-200">
+            Woven Stories • Tailored Dreams
+          </p>
         </div>
       </footer>
     </div>
