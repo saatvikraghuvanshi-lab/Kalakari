@@ -10,39 +10,62 @@ import {
 
 // --- CONSTANTS & ASSETS ---
 const ASSETS = {
-  SAREE_MAIN: "https://www.samyakk.com/blog/wp-content/uploads/2023/12/1-4.jpg",
-  SHIRT: "https://www.clothsvilla.com/cdn/shop/files/610C3502.jpg?v=1716965155&width=1445",
-  LEHENGA_MAIN: "https://cosmos-images2.imgix.net/file/sp_105/e6079be8-646e-4860-9993-4122e2320b33/Lehenga-Cosmos-1.jpg",
-  DRESS: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&q=80",
-  TSHIRT: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80",
-  STOLE: "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80",
-  SCARF: "https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?auto=format&fit=crop&q=80"
+  SAREE_MAIN: "https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg",
+  LEHENGA_MAIN: "https://clothsvilla.com/cdn/shop/products/WhatsAppImage2022-04-02at2.31.50PM_3_1024x1024.jpg?v=1648890244",
+  DRESS: "https://cpimg.tistatic.com/5593157/b/1/ladies-plain-one-piece-dress.jpg",
+  SHIRT: "https://cdn.cosmos.so/dab01853-00d9-48cb-aebc-95b70bea7b3e?format=jpeg",
+  TSHIRT: "https://cdn.cosmos.so/8056a947-4323-498f-990c-3f02f7112368?format=jpeg",
+  STOLE: "https://cdn.cosmos.so/3a83e9e8-6a20-43e2-9f68-489ccf5d60dc?format=jpeg",
+  SCARF: "https://cdn.cosmos.so/7aef443c-4c6e-4dc2-851a-6e4ce883039c?format=jpeg",
+
 };
 
 const COLORS = [
+  // --- EXISTING & NEUTRALS ---
   { name: 'Ivory', hex: '#FDFBF7' },
   { name: 'Midnight', hex: '#1A1A1A' },
+  { name: 'Slate', hex: '#707070' }, // Popular neutral
+  
+  // --- PRIMARY & HERITAGE BOLD ---
+  { name: 'Royal Red', hex: '#9B1B1B' }, // Primary Red (Classic for Bridal/Sarees)
+  { name: 'Cerulean', hex: '#2A5A9F' },  // Primary Blue (Modern Indigo)
+  { name: 'Mustard', hex: '#E1AD01' },   // Primary Yellow (Heritage Haldi)
+  
+  // --- POPULAR STUDIO FAVORITES ---
   { name: 'Terracotta', hex: '#C26D50' },
   { name: 'Sage', hex: '#9CAF88' },
-  { name: 'Gold', hex: '#D4AF37' }
+  { name: 'Emerald', hex: '#046307' },   // Deep Bottle Green
+  { name: 'Dusty Rose', hex: '#DCAE96' }, // Popular for modern Kurtas
+  { name: 'Wine', hex: '#4E0E2E' },      // Deep Burgundy
+  
+  // --- METALLICS ---
+  { name: 'Gold', hex: '#D4AF37' },
+  { name: 'Antique Silver', hex: '#A8A9AD' }
 ];
 
-const FABRICS = ['Chanderi Silk', 'Mulmul Cotton', 'Raw Silk', 'Organza', 'Georgette'];
-const WORK_TYPES = ['Zardosi Handwork', 'Chikan Embroidery', 'Aari Work', 'Minimalist Thread'];
-const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+const FABRICS = ['Silk', 'Georgette', 'Organza', 'Chiffon', 'Crepe', 'Chanderi', 'Raw Silk', 'Cotton'];
+const WORK_TYPES = [" Gota Patti", "Zardosi", "Mirror Work", "Thread Work", "Aari Work", "Sequins Work", "No Work"];
+const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+
 
 const TERMS_AND_CONDITIONS = [
   "Bespoke orders require 4-6 weeks for craftsmanship.",
-  "50% advance payment is mandatory for custom designs.",
+  "Slight variations in color and weave are characteristic of handcrafted textiles and are not considered defects.",
   "No returns on bespoke or altered items.",
-  "Shipping timelines may vary based on embroidery complexity."
+  "Shipping timelines may vary based on embroidery complexity.",
+  "Final fit is dependent on the measurements provided; we offer one complimentary minor adjustment within 15 days of delivery.",
+  "Orders cannot be cancelled once the fabric has been cut or embroidery has commenced."
 ];
 
 const PRIVACY_POLICY = [
   "We collect only necessary information for order fulfillment.",
   "Your measurements are stored securely for future orders.",
   "We do not share your data with third-party marketers.",
-  "Transaction details are encrypted and handled via secure gateways."
+  "Transaction details are encrypted and handled via secure gateways.",
+  "We maintain a digital record of your design preferences to provide a more personalized bespoke experience.",
+  "Communication regarding your order status will be conducted primarily via WhatsApp or Email.",
+  "Our website uses essential cookies to ensure your shopping bag remains intact during your visit.",
+  "You may request a copy of the data we hold or ask for its deletion from our studio records at any time."
 ];
 
 export default function KalaKariStudio() {
@@ -58,11 +81,11 @@ export default function KalaKariStudio() {
   const [checkoutStep, setCheckoutStep] = useState('contact');
   const [uploading, setUploading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(true); 
-  const [currentUser, setCurrentUser] = useState({ email: 'studio@kalakari.com' });
+  const [currentUser, setCurrentUser] = useState({ email: 'chhayahajela167@gmail.com' });
   const [archiveItems, setArchiveItems] = useState<any[]>([
-    { id: 1, url: ASSETS.SAREE_MAIN },
-    { id: 2, url: ASSETS.SHIRT },
-    { id: 3, url: ASSETS.LEHENGA_MAIN }
+    { id: 1, url: "https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg" },
+    { id: 2, url: "https://cdn.cosmos.so/dab01853-00d9-48cb-aebc-95b70bea7b3e?format=jpeg" },
+    { id: 3, url: "https://clothsvilla.com/cdn/shop/products/WhatsAppImage2022-04-02at2.31.50PM_3_1024x1024.jpg?v=1648890244" }
   ]);
 
   const [selection, setSelection] = useState({
@@ -291,11 +314,11 @@ export default function KalaKariStudio() {
             </button>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-24">
               {[
-                { name: 'Classic Dress', hasSize: true, img: ASSETS.DRESS }, 
-                { name: 'Heritage Shirt', hasSize: true, img: ASSETS.SHIRT }, 
-                { name: 'Studio T-Shirt', hasSize: true, img: ASSETS.TSHIRT }, 
-                { name: 'Silk Stole', hasSize: false, img: ASSETS.STOLE }, 
-                { name: 'Ancestral Scarf', hasSize: false, img: ASSETS.SCARF }
+                { name: 'Dress', hasSize: true, img: ASSETS.DRESS }, 
+                { name: 'Shirt', hasSize: true, img: ASSETS.SHIRT }, 
+                { name: 'T-Shirt', hasSize: true, img: ASSETS.TSHIRT }, 
+                { name: 'Stole', hasSize: false, img: ASSETS.STOLE }, 
+                { name: 'Scarf', hasSize: false, img: ASSETS.SCARF }
               ].map(product => (
                 <div key={product.name} onClick={() => setSelectedReadymade(product)} className="group cursor-pointer">
                   <div className="aspect-[3/4] overflow-hidden rounded-2xl mb-8">
@@ -336,24 +359,36 @@ export default function KalaKariStudio() {
         )}
 
         {/* --- STORY SECTION --- */}
-        {view === 'story' && (
-          <motion.section key="story" className="max-w-4xl mx-auto py-32 px-10 text-center">
-            <button onClick={() => navigateTo('home')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 hover:text-black mx-auto">
-              <ArrowLeft size={18}/> Back
-            </button>
-            <h2 className="font-serif text-8xl italic mb-16 tracking-tighter">Our Story</h2>
-            <div className="space-y-16">
-              <p className="text-2xl font-light leading-relaxed text-stone-600">
-                KalaKari Studio, based in Lucknow, India, is a design house dedicated to heritage textile craftsmanship. 
-                We blend ancestral threads with modern silhouettes, creating unique bespoke and luxury prêt pieces.
-              </p>
-              <div className="h-[1px] w-20 bg-stone-200 mx-auto" />
-              <p className="text-xs leading-loose tracking-[0.5em] text-stone-400 uppercase">
-                Ancestral Threads • Modern Silhouettes
-              </p>
-            </div>
-          </motion.section>
-        )}
+{view === 'story' && (
+  <motion.section key="story" className="max-w-4xl mx-auto py-32 px-10 text-center">
+    <button onClick={() => navigateTo('home')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 hover:text-black mx-auto">
+      <ArrowLeft size={18}/> Back
+    </button>
+    <h2 className="font-serif text-8xl italic mb-16 tracking-tighter">Our Story</h2>
+    <div className="space-y-16">
+      <div className="text-2xl font-light leading-relaxed text-stone-600 space-y-8">
+        <p>
+          KalaKari Studio, based in Lucknow, India, is a design house dedicated to heritage textile craftsmanship. 
+          We blend ancestral threads with modern silhouettes, creating unique bespoke and luxury prêt pieces.
+        </p>
+        <p>
+          Rooted in the heart of Awadh, our work is a tribute to the silent hands that have kept the art 
+          of Chikan and Zardosi alive for generations. We do not just design garments; we curate heirlooms 
+          that carry the whisper of the artisan’s needle and the weight of history.
+        </p>
+        <p>
+          Each piece is a conscious dialogue between the past and the present—where raw silks meet 
+          contemporary geometry, and every stitch tells a story of patience, precision, and passion.
+        </p>
+      </div>
+      <div className="h-[1px] w-20 bg-stone-200 mx-auto" />
+      <p className="text-xs leading-loose tracking-[0.5em] text-stone-400 uppercase">
+        Woven Stories • Tailored Dreams
+      </p>
+    </div>
+  </motion.section>
+)}
+      
 
         {/* --- SHOPPING BAG --- */}
         {view === 'cart' && (
@@ -592,7 +627,7 @@ export default function KalaKariStudio() {
                   onClick={() => addToBag({ ...selectedReadymade, ...selection })} 
                   className="w-full bg-[#1A1A1A] text-white py-8 rounded-full text-xs uppercase tracking-[0.4em] font-medium mt-10 shadow-xl hover:bg-black transition-all"
                 >
-                  Add to Bag
+                  Add to Cart
                 </button>
               </div>
             </motion.div>
@@ -644,10 +679,10 @@ export default function KalaKariStudio() {
         </div>
 
         <div className="space-y-4">
-          <p className="text-[10px] font-medium uppercase tracking-[1.2em] text-stone-300">
+          <p className="text-[10px] font-medium uppercase tracking-[1.2em] text-stone-400">
               © 2026 KALAKARI STUDIO • LUCKNOW 
           </p>
-          <p className="text-[8px] uppercase tracking-widest text-stone-200">
+          <p className="text-[8px] uppercase tracking-widest text-stone-400">
             Woven Stories • Tailored Dreams
           </p>
         </div>
