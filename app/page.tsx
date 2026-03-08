@@ -10,9 +10,9 @@ import {
 
 // --- CONSTANTS & ASSETS ---
 const ASSETS = {
-  SAREE_MAIN: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80",
-  SHIRT: "https://images.unsplash.com/photo-1598033129183-c4f50c717658?auto=format&fit=crop&q=80",
-  LEHENGA_MAIN: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&q=80",
+  SAREE_MAIN: "https://www.samyakk.com/blog/wp-content/uploads/2023/12/1-4.jpg",
+  SHIRT: "https://www.clothsvilla.com/cdn/shop/files/610C3502.jpg?v=1716965155&width=1445",
+  LEHENGA_MAIN: "https://cosmos-images2.imgix.net/file/sp_105/e6079be8-646e-4860-9993-4122e2320b33/Lehenga-Cosmos-1.jpg",
   DRESS: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&q=80",
   TSHIRT: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80",
   STOLE: "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80",
@@ -94,6 +94,7 @@ export default function KalaKariStudio() {
 
   const handleUpload = (e: any) => {
     setUploading(true);
+    // Simulating upload delay
     setTimeout(() => setUploading(false), 2000);
   };
 
@@ -117,8 +118,8 @@ export default function KalaKariStudio() {
         >
           KalaKari
         </span>
-        
-        {/* --- THE SPECIFIC COLLECTIONS LOGIC CHANGE --- */}
+
+        {/* --- DESKTOP NAVIGATION & COLLECTIONS DROPDOWN --- */}
         <div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex gap-16 text-[10px] font-bold uppercase tracking-[0.4em] text-stone-500">
           <div className="relative">
             <button 
@@ -176,7 +177,6 @@ export default function KalaKariStudio() {
           </button>
         </div>
       </nav>
-
       <AnimatePresence mode="wait">
         {/* --- HOME VIEW --- */}
         {view === 'home' && (
@@ -212,7 +212,7 @@ export default function KalaKariStudio() {
         )}
 
         {/* --- CUSTOM / BESPOKE SECTION --- */}
-        {colType === 'custom' && (
+        {(view === 'collections' && colType === 'custom') && (
           <motion.section key="custom" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-7xl mx-auto py-24 px-10">
             <button 
               onClick={() => {setColType(null); setCustomCat(null); setView('home')}} 
@@ -237,8 +237,6 @@ export default function KalaKariStudio() {
               <div className="bg-white p-16 rounded-[3rem] border border-stone-100 grid lg:grid-cols-12 gap-16 shadow-sm">
                 <div className="lg:col-span-5 space-y-12">
                   <h3 className="font-serif text-6xl italic border-b border-stone-100 pb-10">{customCat}</h3>
-                  
-                  {/* Palette */}
                   <div className="space-y-6">
                     <label className="text-xs uppercase tracking-widest text-stone-400">Palette</label>
                     <div className="flex gap-5">
@@ -252,10 +250,8 @@ export default function KalaKariStudio() {
                       ))}
                     </div>
                   </div>
-
-                  {/* Fabric */}
                   <div className="space-y-6">
-                    <label className="text-xs uppercase tracking-widest text-stone-400">Fabric Selection</label>
+                    <label className="text-xs uppercase tracking-widest text-stone-400">Fabric</label>
                     <div className="grid grid-cols-2 gap-3">
                       {FABRICS.map(f => (
                         <button 
@@ -268,76 +264,13 @@ export default function KalaKariStudio() {
                       ))}
                     </div>
                   </div>
-
-                  {/* Work Type */}
-                  <div className="space-y-6">
-                    <label className="text-xs uppercase tracking-widest text-stone-400">Embroidery & Work</label>
-                    <div className="grid grid-cols-1 gap-3">
-                      {WORK_TYPES.map(w => (
-                        <button 
-                          key={w} 
-                          onClick={() => setSelection({...selection, work: w})} 
-                          className={`py-4 px-6 border text-[10px] text-left uppercase tracking-widest rounded-xl transition-all ${selection.work === w ? 'bg-black text-white border-black' : 'text-stone-400 border-stone-100'}`}
-                        >
-                          {w}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </div>
-
                 <div className="lg:col-span-7 space-y-12">
-                  <div className="flex justify-between items-center">
-                    <label className="text-xs uppercase tracking-widest text-stone-400">Measurements & Tailoring</label>
-                    <button 
-                      onClick={() => setShowSizeChart(!showSizeChart)} 
-                      className="text-[10px] uppercase tracking-widest text-stone-900 font-bold underline"
-                    >
-                      View Size Chart
-                    </button>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-8">
-                    <div className="space-y-4">
-                      <label className="text-xs uppercase tracking-widest text-stone-400">Buttons</label>
-                      <div className="flex gap-4">
-                        {['Front', 'Back'].map(b => (
-                          <button 
-                            key={b} 
-                            onClick={() => setSelection({...selection, buttons: b})} 
-                            className={`flex-1 py-4 border text-[10px] uppercase tracking-widest rounded-xl transition-all ${selection.buttons === b ? 'bg-black text-white border-black' : 'text-stone-400 border-stone-100'}`}
-                          >
-                            {b}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <label className="text-xs uppercase tracking-widest text-stone-400">Sleeves</label>
-                      <select 
-                        onChange={(e) => setSelection({...selection, sleeve: e.target.value})} 
-                        className="w-full py-4 border-b border-stone-100 text-xs bg-transparent outline-none focus:border-black"
-                      >
-                        <option>Full Length</option>
-                        <option>Three-Quarter</option>
-                        <option>Half</option>
-                        <option>Sleeveless</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-6">
+                   <div className="grid grid-cols-3 gap-6">
                     {['Bust', 'Waist', 'Hips', 'Shoulder', 'Apex', 'Armhole'].map(m => (
-                      <div key={m} className="space-y-2">
-                        <input 
-                          type="text" 
-                          placeholder={m} 
-                          className="w-full py-4 border-b border-stone-100 outline-none text-base focus:border-black transition-colors" 
-                        />
-                      </div>
+                      <input key={m} type="text" placeholder={m} className="w-full py-4 border-b border-stone-100 outline-none text-base focus:border-black bg-transparent" />
                     ))}
                   </div>
-
                   <button 
                     onClick={() => addToBag({ name: `Bespoke ${customCat}`, type: 'custom', ...selection })} 
                     className="w-full bg-[#1A1A1A] text-white py-8 rounded-full text-xs uppercase tracking-[0.3em] font-medium shadow-xl mt-10 hover:bg-black transition-all"
@@ -351,9 +284,9 @@ export default function KalaKariStudio() {
         )}
 
         {/* --- READYMADE GALLERY --- */}
-        {colType === 'readymade' && (
+        {(view === 'collections' && colType === 'readymade') && (
           <motion.section key="ready" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-screen-2xl mx-auto py-20 px-10">
-            <button onClick={() => setColType(null)} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 hover:text-black transition-colors">
+            <button onClick={() => {setColType(null); setView('home')}} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 hover:text-black transition-colors">
               <ArrowLeft size={18}/> Back
             </button>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-24">
@@ -377,7 +310,6 @@ export default function KalaKariStudio() {
             </div>
           </motion.section>
         )}
-
         {/* --- ARCHIVE / SAMPLES --- */}
         {view === 'samples' && (
           <motion.section key="samples" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-screen-2xl mx-auto py-24 px-10 text-center">
@@ -514,7 +446,6 @@ export default function KalaKariStudio() {
                 )}
               </div>
             </div>
-
             <div className="w-full lg:w-[35%] bg-[#FDFBF7] p-10 lg:p-20 border-l border-stone-100">
               <h3 className="font-serif text-5xl italic mb-16">Summary</h3>
               <div className="space-y-10">
@@ -537,7 +468,6 @@ export default function KalaKariStudio() {
             </div>
           </motion.section>
         )}
-
         {/* --- ACCOUNT VIEW --- */}
         {view === 'account' && (
           <motion.section key="account" className="max-w-6xl mx-auto py-32 px-10">
