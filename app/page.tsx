@@ -44,7 +44,6 @@ const PRIVACY_POLICY = [
   "We do not share your contact details with third-party marketers.",
   "Secure payment links are handled via WhatsApp direct communication."
 ];
-const [showSupport, setShowSupport] = useState(false);
 
 export default function KalakariBoutique() {
   // --- STATE ---
@@ -55,6 +54,7 @@ export default function KalakariBoutique() {
   const [cart, setCart] = useState<any[]>([]);
   const [checkoutStep, setCheckoutStep] = useState<'contact' | 'address' | 'payment'>('contact');
   const [showSizeChart, setShowSizeChart] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
 
   const [selection, setSelection] = useState({ 
     fabric: FABRICS[0], work: WORK_TYPES[0], color: COLORS[3].name, 
