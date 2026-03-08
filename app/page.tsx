@@ -141,50 +141,57 @@ export default function KalaKariStudio() {
         >
           KalaKari
         </span>
-
-        {/* --- DESKTOP NAVIGATION & COLLECTIONS DROPDOWN --- */}
-        <div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex gap-16 text-[10px] font-bold uppercase tracking-[0.4em] text-stone-500">
-          <div className="relative">
+       {/* --- DESKTOP NAVIGATION & COLLECTIONS DROPDOWN --- */}
+<div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex gap-16 text-[10px] font-bold uppercase tracking-[0.4em] text-stone-500">
+  <div className="relative">
+    <button 
+      onClick={() => setShowCollections(!showCollections)} 
+      className={`${showCollections ? 'text-black' : 'hover:text-black'} transition-colors`}
+    >
+      Collections
+    </button>
+    <AnimatePresence>
+      {showCollections && (
+        <>
+          <div className="fixed inset-0 z-[-1]" onClick={() => setShowCollections(false)} />
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            exit={{ opacity: 0, y: -5 }}
+            /* Reduced padding from p-10 to p-4, reduced rounded corners to xl */
+            className="absolute left-1/2 -translate-x-1/2 mt-6 flex gap-4 bg-white p-4 border border-stone-100 shadow-[0_20px_40px_rgba(0,0,0,0.08)] rounded-xl z-[110]"
+          >
             <button 
-              onClick={() => setShowCollections(!showCollections)} 
-              className={`${showCollections ? 'text-black' : 'hover:text-black'} transition-colors`}
+              onClick={() => { setColType('readymade'); setView('collections'); setShowCollections(false); }}
+              /* Removed rounded-l for a cleaner internal look */
+              className="group flex flex-col items-center gap-1 p-3 hover:bg-stone-50 transition-all"
             >
-              Collections
+              {/* Changed to Uppercase, removed Serif/Italic, sharpened Font Weight */}
+              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black group-hover:scale-105 transition-transform">Readymade</span>
+              <span className="text-[7px] tracking-[0.1em] text-stone-400 uppercase">Studio Selection</span>
             </button>
-            <AnimatePresence>
-              {showCollections && (
-                <>
-                  <div className="fixed inset-0 z-[-1]" onClick={() => setShowCollections(false)} />
-                  <motion.div 
-                    initial={{ opacity: 0, y: -10 }} 
-                    animate={{ opacity: 1, y: 0 }} 
-                    exit={{ opacity: 0, y: -5 }}
-                    className="absolute left-1/2 -translate-x-1/2 mt-10 flex gap-10 bg-white p-10 border border-stone-100 shadow-[0_30px_60px_rgba(0,0,0,0.12)] rounded-[2.5rem] z-[110]"
-                  >
-                    <button 
-                      onClick={() => { setColType('readymade'); setView('collections'); setShowCollections(false); }}
-                      className="group flex flex-col items-center gap-2 p-4 hover:bg-stone-50 rounded-2xl transition-all"
-                    >
-                      <span className="font-serif text-4xl italic text-black group-hover:scale-105 transition-transform">Readymade</span>
-                      <span className="text-[8px] tracking-[0.3em] text-stone-400 uppercase">Studio Selection</span>
-                    </button>
-                    <div className="w-[1px] bg-stone-100 self-stretch my-2" />
-                    <button 
-                      onClick={() => { setColType('custom'); setView('collections'); setShowCollections(false); }}
-                      className="group flex flex-col items-center gap-2 p-4 hover:bg-stone-50 rounded-2xl transition-all"
-                    >
-                      <span className="font-serif text-4xl italic text-black group-hover:scale-105 transition-transform">Custom</span>
-                      <span className="text-[8px] tracking-[0.3em] text-stone-400 uppercase">Bespoke Craft</span>
-                    </button>
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-l border-t border-stone-100"></div>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
-          <button onClick={() => navigateTo('samples')} className="hover:text-black transition-colors">The Archive</button>
-          <button onClick={() => navigateTo('story')} className="hover:text-black transition-colors">Our Story</button>
-        </div>
+
+            <div className="w-[1px] bg-stone-100 self-stretch my-1" />
+
+            <button 
+              onClick={() => { setColType('custom'); setView('collections'); setShowCollections(false); }}
+              className="group flex flex-col items-center gap-1 p-3 hover:bg-stone-50 transition-all"
+            >
+              {/* Changed to Uppercase, removed Serif/Italic, sharpened Font Weight */}
+              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black group-hover:scale-105 transition-transform">Custom</span>
+              <span className="text-[7px] tracking-[0.1em] text-stone-400 uppercase">Bespoke Craft</span>
+            </button>
+            
+            {/* The Little Arrow Tip */}
+            <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rotate-45 border-l border-t border-stone-100"></div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  </div>
+  <button onClick={() => navigateTo('samples')} className="hover:text-black transition-colors">The Archive</button>
+  <button onClick={() => navigateTo('story')} className="hover:text-black transition-colors">Our Story</button>
+</div>
 
         <div className="flex items-center gap-10">
           <button onClick={() => navigateTo('account')} className="hover:opacity-60 transition-opacity">
