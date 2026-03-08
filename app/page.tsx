@@ -44,6 +44,7 @@ const PRIVACY_POLICY = [
   "We do not share your contact details with third-party marketers.",
   "Secure payment links are handled via WhatsApp direct communication."
 ];
+const [showSupport, setShowSupport] = useState(false);
 
 export default function KalakariBoutique() {
   // --- STATE ---
@@ -484,14 +485,15 @@ export default function KalakariBoutique() {
           </motion.section>
         )}
       </AnimatePresence>
-{/* --- FOOTER --- */}
-      <footer className="px-10 py-40 bg-[#FDFBF7] border-t border-stone-100 text-center">
+       
+       {/* --- FOOTER --- */}
+      <footer className="px-10 py-40 bg-[#FDFBF7] border-t border-stone-100 text-center relative">
         {/* Social Icons */}
         <div className="flex justify-center gap-20 mb-24 text-stone-300">
-          <a href="https://instagram.com/hajelachhaya" target="_blank" className="hover:text-black transition-all hover:scale-110">
+          <a href="https://instagram.com/hajelachhaya" target="_blank" rel="noopener noreferrer" className="hover:text-black transition-all hover:scale-110">
             <Instagram size={28} strokeWidth={1.2} />
           </a>
-          <a href="https://facebook.com/chhaya.hajela" target="_blank" className="hover:text-black transition-all hover:scale-110">
+          <a href="https://facebook.com/chhaya.hajela" target="_blank" rel="noopener noreferrer" className="hover:text-black transition-all hover:scale-110">
             <Facebook size={28} strokeWidth={1.2} />
           </a>
           <a href="mailto:chhayahajela167@gmail.com" className="hover:text-black transition-all hover:scale-110">
@@ -499,18 +501,37 @@ export default function KalakariBoutique() {
           </a>
         </div>
 
-        {/* Footer Navigation & Support */}
-        <div className="flex flex-col md:flex-row justify-center items-start md:items-center gap-12 md:gap-24 mb-16 text-xs font-medium uppercase tracking-[0.4em] text-stone-400">
+        {/* Footer Navigation */}
+        <div className="flex flex-col md:flex-row justify-center items-center gap-12 md:gap-24 mb-20 text-xs font-medium uppercase tracking-[0.4em] text-stone-400">
           <button onClick={() => navigateTo('terms')} className="hover:text-black transition-colors">Terms & Conditions</button>
           <button onClick={() => navigateTo('policy')} className="hover:text-black transition-colors">Privacy Policy</button>
           
-          <div className="flex flex-col items-center md:items-start gap-4">
-            <span className="text-black font-bold tracking-[0.4em]">Customer Support</span>
-            <div className="flex flex-col gap-2 text-[10px] text-stone-500 tracking-widest lowercase">
-              <a href="tel:+917991464638" className="hover:text-black transition-colors">+91 7991464638</a>
-              <a href="tel:+919589129241" className="hover:text-black transition-colors">+91 9589129241</a>
-              <a href="tel:+919301661160" className="hover:text-black transition-colors">+91 9301661160</a>
-            </div>
+          <div className="relative">
+            <button 
+              onClick={() => setShowSupport(!showSupport)} 
+              className={`${showSupport ? 'text-black font-bold underline underline-offset-8' : 'hover:text-black'} transition-all duration-300`}
+            >
+              Customer Support
+            </button>
+            
+            {/* Pop-up Contacts */}
+            <AnimatePresence>
+              {showSupport && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 15 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute left-1/2 -translate-x-1/2 bottom-full mb-8 flex flex-col gap-5 w-max bg-white p-8 border border-stone-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2rem] z-[110]"
+                >
+                  <a href="tel:+917991464638" className="text-[10px] tracking-[0.3em] text-stone-500 hover:text-black transition-colors">+91 7991464638</a>
+                  <a href="tel:+919589129241" className="text-[10px] tracking-[0.3em] text-stone-500 hover:text-black transition-colors">+91 9589129241</a>
+                  <a href="tel:+919301661160" className="text-[10px] tracking-[0.3em] text-stone-500 hover:text-black transition-colors">+91 9301661160</a>
+                  
+                  {/* Small arrow pointing down */}
+                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-r border-b border-stone-100"></div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
