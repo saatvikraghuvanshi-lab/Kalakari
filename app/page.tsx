@@ -83,7 +83,15 @@ export default function KalaKariStudio() {
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState('contact');
   const [uploading, setUploading] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(true); 
+
+  // REQUIREMENT: Strict Admin Verification [cite: 17]
+  const [isAdmin, setIsAdmin] = useState(false); 
+  const ADMIN_EMAILS = [
+    "saatvikraghuvanshi123@gmail.com",
+    "dhruvhajela5@gmail.com",
+    "chhayahajela167@gmail.com"
+  ];
+
   const [archiveItems, setArchiveItems] = useState<any[]>([
     { id: 1, url: "https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg" },
     { id: 2, url: "https://cdn.cosmos.so/dab01853-00d9-48cb-aebc-95b70bea7b3e?format=jpeg" },
@@ -101,15 +109,21 @@ export default function KalaKariStudio() {
 
   const [form, setForm] = useState({ name: '', mobile: '', house: '' });
 
-  // S03: SURGICAL AUTH EFFECTS
+  // S03: SURGICAL AUTH EFFECTS [cite: 20]
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      // Verify Admin email on load [cite: 17]
+      setIsAdmin(!!currentUser?.email && ADMIN_EMAILS.includes(currentUser.email));
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      // Verify Admin email on state change [cite: 17]
+      setIsAdmin(!!currentUser?.email && ADMIN_EMAILS.includes(currentUser.email));
     });
 
     return () => subscription.unsubscribe();
