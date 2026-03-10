@@ -47,6 +47,7 @@ const FABRICS = ['Silk', 'Georgette', 'Organza', 'Chiffon', 'Crepe', 'Chanderi',
 const EMBROIDERY_STYLES = ['Zardosi', 'Mirror Work', 'Thread Work', 'Gota Patti', 'Aari','Sequin','NONE'];
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 
+// RESTORED LEGAL CONTENT
 const TERMS_AND_CONDITIONS = [
   "Bespoke orders require 4-6 weeks for craftsmanship.",
   "Slight variations in color and weave are characteristic of handcrafted textiles and are not considered defects.",
@@ -610,6 +611,38 @@ export default function KalaKariStudio() {
             )}
           </motion.section>
         )}
+
+        {/* RESTORED TERMS VIEW */}
+        {view === 'terms' && (
+          <motion.section key="terms" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-3xl mx-auto py-20 px-6">
+            <button onClick={() => navigateTo('home')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400"><ArrowLeft size={18}/> Back</button>
+            <h2 className="font-serif text-5xl italic mb-12">Terms & Conditions</h2>
+            <div className="space-y-8">
+              {TERMS_AND_CONDITIONS.map((text, i) => (
+                <div key={i} className="flex gap-6 pb-6 border-b border-stone-100">
+                  <span className="text-[10px] font-bold text-stone-300">0{i+1}</span>
+                  <p className="text-sm text-stone-600 leading-relaxed">{text}</p>
+                </div>
+              ))}
+            </div>
+          </motion.section>
+        )}
+
+        {/* RESTORED PRIVACY VIEW */}
+        {view === 'policy' && (
+          <motion.section key="policy" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-3xl mx-auto py-20 px-6">
+            <button onClick={() => navigateTo('home')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400"><ArrowLeft size={18}/> Back</button>
+            <h2 className="font-serif text-5xl italic mb-12">Privacy Policy</h2>
+            <div className="space-y-8">
+              {PRIVACY_POLICY.map((text, i) => (
+                <div key={i} className="flex gap-6 pb-6 border-b border-stone-100">
+                  <span className="text-[10px] font-bold text-stone-300">0{i+1}</span>
+                  <p className="text-sm text-stone-600 leading-relaxed">{text}</p>
+                </div>
+              ))}
+            </div>
+          </motion.section>
+        )}
       </AnimatePresence>
 
       {/* --- PRODUCT DRAWER --- */}
@@ -658,11 +691,37 @@ export default function KalaKariStudio() {
           <a href="https://facebook.com/chhaya.hajela" target="_blank" className="hover:text-black"><Facebook size={24} /></a>
           <a href="mailto:chhayahajela167@gmail.com" className="hover:text-black"><Mail size={24} /></a>
         </div>
+        
         <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-20 mb-16 text-[10px] font-medium uppercase tracking-[0.3em] text-stone-400">
-          <button onClick={() => navigateTo('terms')}>Terms</button>
-          <button onClick={() => navigateTo('policy')}>Privacy</button>
-          <button onClick={() => setShowSupport(!showSupport)} className={showSupport ? 'text-black font-bold' : ''}>Support</button>
+          <button onClick={() => navigateTo('terms')}>Terms & Conditions</button>
+          <button onClick={() => navigateTo('policy')}>Privacy Policy</button>
+          
+          {/* RESTORED SUPPORT BUBBLE LOGIC */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowSupport(!showSupport)} 
+              className={`${showSupport ? 'text-black font-bold' : 'hover:text-stone-600'} transition-all`}
+            >
+              Customer Support
+            </button>
+            <AnimatePresence>
+              {showSupport && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 15 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute left-1/2 -translate-x-1/2 bottom-full mb-8 flex flex-col gap-5 w-max bg-white p-8 border border-stone-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2rem] z-[110]"
+                >
+                  <a href="tel:+917991464638" className="text-[10px] tracking-[0.3em] text-stone-500 hover:text-black transition-colors">+91 7991464638</a>
+                  <a href="tel:+919589129241" className="text-[10px] tracking-[0.3em] text-stone-500 hover:text-black transition-colors">+91 9589129241</a>
+                  <a href="tel:+919301661160" className="text-[10px] tracking-[0.3em] text-stone-500 hover:text-black transition-colors">+91 9301661160</a>
+                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-r border-b border-stone-100"></div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
+
         <div className="space-y-3">
           <p className="text-[9px] md:text-[10px] font-medium uppercase tracking-[1em] text-stone-400">© 2026 KALAKARI STUDIO</p>
           <p className="text-[7px] md:text-[8px] uppercase tracking-widest text-stone-400">Woven Stories • Tailored Dreams</p>
