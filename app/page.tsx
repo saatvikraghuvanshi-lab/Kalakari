@@ -13,7 +13,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 import { 
   User, ShoppingBag, ArrowLeft, ChevronRight, X, Info, 
   Upload, Trash2, Loader2, LogOut, CheckCircle2, Send, 
-  Instagram, Facebook, Mail, ChevronUp, ChevronDown 
+  Instagram, Facebook, Mail, ChevronUp, ChevronDown, Menu
 } from 'lucide-react';
 
 // --- CONSTANTS & ASSETS ---
@@ -44,7 +44,7 @@ const COLORS = [
 ];
 
 const FABRICS = ['Silk', 'Georgette', 'Organza', 'Chiffon', 'Crepe', 'Chanderi', 'Raw Silk', 'Cotton'];
-const WORK_TYPES = [" Gota Patti", "Zardosi", "Mirror Work", "Thread Work", "Aari Work", "Sequins Work", "No Work"];
+const EMBROIDERY_STYLES = ['Zardosi', 'Mirror Work', 'Thread Work', 'Gota Patti', 'Aari','Sequin','NONE'];
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 
 const TERMS_AND_CONDITIONS = [
@@ -72,7 +72,7 @@ export default function KalaKariStudio() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // --- YOUR ORIGINAL STATE ---
+  // --- UI STATE ---
   const [view, setView] = useState('home');
   const [colType, setColType] = useState<null | 'readymade' | 'custom'>(null);
   const [customCat, setCustomCat] = useState<null | 'Saree' | 'Lehenga' | 'Kurta Set'>(null);
@@ -80,11 +80,11 @@ export default function KalaKariStudio() {
   const [showCollections, setShowCollections] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [selectedReadymade, setSelectedReadymade] = useState<any>(null);
-  const [showSizeChart, setShowSizeChart] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState('contact');
   const [uploading, setUploading] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // REQUIREMENT: Strict Admin Verification [cite: 17]
+  // REQUIREMENT: Strict Admin Verification
   const [isAdmin, setIsAdmin] = useState(false); 
   const ADMIN_EMAILS = [
     "saatvikraghuvanshi123@gmail.com",
@@ -93,15 +93,15 @@ export default function KalaKariStudio() {
   ];
 
   const [archiveItems, setArchiveItems] = useState<any[]>([
-    { id: 1, url: "https://media.samyakk.in/pub/media/catalog/product/b/e/beige-and-gold-dual-tone-tissue-designer-saree-with-thread-work-and-unstitched-blouse-gh1568-a.jpg" },
-    { id: 2, url: "https://cdn.cosmos.so/dab01853-00d9-48cb-aebc-95b70bea7b3e?format=jpeg" },
-    { id: 3, url: "https://clothsvilla.com/cdn/shop/products/WhatsAppImage2022-04-02at2.31.50PM_3_1024x1024.jpg?v=1648890244" }
+    { id: 1, url: ASSETS.SAREE_MAIN },
+    { id: 2, url: ASSETS.SHIRT },
+    { id: 3, url: ASSETS.LEHENGA_MAIN }
   ]);
 
   const [selection, setSelection] = useState({
     color: 'Ivory',
     fabric: 'Chanderi Silk',
-    work: 'Zardosi Handwork',
+    work: 'NONE',
     buttons: 'Front',
     sleeve: 'Full Length',
     size: 'M'
@@ -109,12 +109,11 @@ export default function KalaKariStudio() {
 
   const [form, setForm] = useState({ name: '', mobile: '', house: '' });
 
-  // S03: SURGICAL AUTH EFFECTS [cite: 20]
+  // S03: SURGICAL AUTH EFFECTS
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
-      // Verify Admin email on load [cite: 17]
       setIsAdmin(!!currentUser?.email && ADMIN_EMAILS.includes(currentUser.email));
       setLoading(false);
     });
@@ -122,7 +121,6 @@ export default function KalaKariStudio() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
-      // Verify Admin email on state change [cite: 17]
       setIsAdmin(!!currentUser?.email && ADMIN_EMAILS.includes(currentUser.email));
     });
 
@@ -145,6 +143,7 @@ export default function KalaKariStudio() {
 
   const navigateTo = (v: string) => {
     setView(v);
+    setMobileMenuOpen(false);
     window.scrollTo(0, 0);
   };
 
@@ -173,8 +172,8 @@ export default function KalaKariStudio() {
 
   if (!user) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-[#FDFBF7] gap-8">
-         <h1 className="font-serif text-6xl italic tracking-tighter text-[#1A1A1A]">KalaKari</h1>
+      <div className="h-screen flex flex-col items-center justify-center bg-[#FDFBF7] gap-8 px-6 text-center">
+         <h1 className="font-serif text-5xl md:text-6xl italic tracking-tighter text-[#1A1A1A]">KalaKari</h1>
          <button 
            onClick={login} 
            className="px-10 py-4 border border-[#1A1A1A] text-[10px] font-black uppercase tracking-widest text-[#1A1A1A] hover:bg-black hover:text-[#FDFBF7] transition-all"
@@ -186,19 +185,19 @@ export default function KalaKariStudio() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-[#1A1A1A] font-sans selection:bg-stone-200">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#1A1A1A] font-sans selection:bg-stone-200 overflow-x-hidden">
       
       {/* --- HEADER --- */}
-      <nav className="relative w-full z-[100] px-12 py-12 flex justify-between items-center bg-transparent">
+      <nav className="relative w-full z-[100] px-6 md:px-12 py-8 md:py-12 flex justify-between items-center bg-transparent">
         <span 
           onClick={() => {navigateTo('home'); setColType(null); setCustomCat(null); setShowCollections(false);}} 
-          className="font-serif text-5xl italic cursor-pointer tracking-tighter text-[#1A1A1A]"
+          className="font-serif text-4xl md:text-5xl italic cursor-pointer tracking-tighter text-[#1A1A1A]"
         >
           KalaKari
         </span>
 
-        {/* --- DESKTOP NAVIGATION & COLLECTIONS DROPDOWN --- */}
-        <div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex gap-16 text-[10px] font-bold uppercase tracking-[0.4em] text-stone-500">
+        {/* --- DESKTOP NAVIGATION --- */}
+        <div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex gap-16 text-[13px] font-bold uppercase tracking-[0.3em] text-stone-500">
           <div className="relative">
             <button 
               onClick={() => setShowCollections(!showCollections)} 
@@ -221,20 +220,14 @@ export default function KalaKariStudio() {
                       className="group flex flex-col items-center gap-1 p-3 hover:bg-stone-50 transition-all"
                     >
                       <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black group-hover:scale-105 transition-transform">Readymade</span>
-                      <span className="text-[7px] tracking-[0.1em] text-stone-400 uppercase">Studio Selection</span>
                     </button>
-
                     <div className="w-[1px] bg-stone-100 self-stretch my-1" />
-
                     <button 
                       onClick={() => { setColType('custom'); setView('collections'); setShowCollections(false); }}
                       className="group flex flex-col items-center gap-1 p-3 hover:bg-stone-50 transition-all"
                     >
                       <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black group-hover:scale-105 transition-transform">Custom</span>
-                      <span className="text-[7px] tracking-[0.1em] text-stone-400 uppercase">Bespoke Craft</span>
                     </button>
-                    
-                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rotate-45 border-l border-t border-stone-100"></div>
                   </motion.div>
                 </>
               )}
@@ -244,20 +237,46 @@ export default function KalaKariStudio() {
           <button onClick={() => navigateTo('story')} className="hover:text-black transition-colors">Our Story</button>
         </div>
 
-        <div className="flex items-center gap-10">
+        <div className="flex items-center gap-5 md:gap-10">
           <button onClick={() => navigateTo('account')} className="hover:opacity-60 transition-opacity">
-            <User size={24} strokeWidth={1.2} />
+            <User size={22} strokeWidth={1.2} />
           </button>
           <button onClick={() => navigateTo('cart')} className="relative hover:opacity-60 transition-opacity">
-            <ShoppingBag size={24} strokeWidth={1.2} />
+            <ShoppingBag size={22} strokeWidth={1.2} />
             {cart.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">
+              <span className="absolute -top-1 -right-1 bg-black text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
                 {cart.length}
               </span>
             )}
           </button>
+          {/* MOBILE TOGGLE */}
+          <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden text-stone-600">
+            <Menu size={24} />
+          </button>
         </div>
       </nav>
+
+      {/* --- MOBILE DRAWER --- */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div 
+            initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+            className="fixed inset-0 z-[1000] bg-[#FDFBF7] flex flex-col p-10 lg:hidden"
+          >
+            <div className="flex justify-between items-center mb-20">
+              <span className="font-serif text-3xl italic">KalaKari</span>
+              <button onClick={() => setMobileMenuOpen(false)}><X size={30}/></button>
+            </div>
+            <div className="flex flex-col gap-10 text-2xl font-serif italic text-stone-800">
+              <button onClick={() => {setColType('readymade'); navigateTo('collections')}} className="text-left">Readymade Selection</button>
+              <button onClick={() => {setColType('custom'); navigateTo('collections')}} className="text-left">Custom Bespoke</button>
+              <button onClick={() => navigateTo('samples')} className="text-left">The Archive</button>
+              <button onClick={() => navigateTo('story')} className="text-left">Our Story</button>
+              <button onClick={() => navigateTo('account')} className="text-left">My Space</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence mode="wait">
         {/* --- HOME VIEW --- */}
@@ -266,26 +285,27 @@ export default function KalaKariStudio() {
             key="home" 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
-            className="pt-16 pb-32 px-10 max-w-screen-2xl mx-auto"
+            className="pt-8 md:pt-16 pb-32 px-6 md:px-10 max-w-screen-2xl mx-auto"
           >
-            <h2 className="font-serif text-[6rem] md:text-9xl italic leading-tight mb-20 max-w-5xl tracking-tighter">
+            <h2 className="font-serif text-[2.8rem] md:text-6xl italic leading-tight mb-12 md:mb-20 max-w-4xl tracking-tighter">
               Handcrafted <br /> with heritage.
             </h2>
-            <div className="grid grid-cols-12 gap-5 h-[75vh] mb-20">
-              <div className="col-span-4 overflow-hidden rounded-2xl shadow-sm">
+            {/* Gallery: Stacks on Mobile */}
+            <div className="flex flex-col md:grid md:grid-cols-12 gap-5 md:h-[50vh] mb-16 md:mb-20">
+              <div className="h-64 md:h-auto md:col-span-4 overflow-hidden rounded-2xl shadow-sm">
                 <img src={ASSETS.SAREE_MAIN} className="h-full w-full object-cover hover:scale-105 transition-transform duration-1000" />
               </div>
-              <div className="col-span-5 overflow-hidden rounded-2xl shadow-sm">
+              <div className="h-80 md:h-auto md:col-span-5 overflow-hidden rounded-2xl shadow-sm">
                 <img src={ASSETS.SHIRT} className="h-full w-full object-cover hover:scale-105 transition-transform duration-1000" />
               </div>
-              <div className="col-span-3 overflow-hidden rounded-2xl shadow-sm">
+              <div className="h-64 md:h-auto md:col-span-3 overflow-hidden rounded-2xl shadow-sm">
                 <img src={ASSETS.LEHENGA_MAIN} className="h-full w-full object-cover hover:scale-105 transition-transform duration-1000" />
               </div>
             </div>
             <div className="flex justify-center">
               <button 
-                onClick={() => setShowCollections(true)} 
-                className="border border-[#1A1A1A] px-24 py-6 rounded-full text-[10px] uppercase tracking-[0.4em] font-bold hover:bg-black hover:text-[#FDFBF7] transition-all text-[#1A1A1A]"
+                onClick={() => setMobileMenuOpen(true)} 
+                className="w-full md:w-auto border border-[#1A1A1A] px-16 md:px-24 py-5 md:py-6 rounded-full text-[10px] uppercase tracking-[0.4em] font-bold hover:bg-black hover:text-[#FDFBF7] transition-all text-[#1A1A1A]"
               >
                 Explore Collections
               </button>
@@ -295,38 +315,38 @@ export default function KalaKariStudio() {
 
         {/* --- CUSTOM / BESPOKE SECTION --- */}
         {(view === 'collections' && colType === 'custom') && (
-          <motion.section key="custom" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-7xl mx-auto py-24 px-10">
+          <motion.section key="custom" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-7xl mx-auto py-12 md:py-24 px-6 md:px-10">
             <button 
               onClick={() => {setColType(null); setCustomCat(null); setView('home')}} 
-              className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 hover:text-black transition-colors"
+              className="mb-8 md:mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400"
             >
               <ArrowLeft size={18}/> Back
             </button>
             
             {!customCat ? (
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {['Saree', 'Lehenga', 'Kurta Set'].map(c => (
                   <button 
                     key={c} 
                     onClick={() => setCustomCat(c as any)} 
-                    className="p-20 border border-stone-200 bg-white rounded-3xl font-serif text-5xl italic hover:border-black transition-all"
+                    className="py-16 md:p-20 border border-stone-200 bg-white rounded-3xl font-serif text-4xl md:text-5xl italic hover:border-black transition-all"
                   >
                     {c}
                   </button>
                 ))}
               </div>
             ) : (
-              <div className="bg-white p-16 rounded-[3rem] border border-stone-100 grid lg:grid-cols-12 gap-16 shadow-sm">
-                <div className="lg:col-span-5 space-y-12">
-                  <h3 className="font-serif text-6xl italic border-b border-stone-100 pb-10">{customCat}</h3>
+              <div className="bg-white p-8 md:p-16 rounded-[2rem] md:rounded-[3rem] border border-stone-100 grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-16 shadow-sm">
+                <div className="lg:col-span-5 space-y-10 md:space-y-12">
+                  <h3 className="font-serif text-5xl md:text-6xl italic border-b border-stone-100 pb-6 md:pb-10">{customCat}</h3>
                   <div className="space-y-6">
                     <label className="text-xs uppercase tracking-widest text-stone-400">Palette</label>
-                    <div className="flex gap-5">
+                    <div className="flex flex-wrap gap-4 md:gap-5">
                       {COLORS.map(c => (
                         <button 
                           key={c.name} 
                           onClick={() => setSelection({...selection, color: c.name})} 
-                          className={`w-10 h-10 rounded-full border border-stone-100 transition-all ${selection.color === c.name ? 'ring-2 ring-black ring-offset-4 scale-110' : ''}`} 
+                          className={`w-8 h-8 md:w-10 md:h-10 rounded-full border border-stone-100 transition-all ${selection.color === c.name ? 'ring-2 ring-black ring-offset-4 scale-110' : ''}`} 
                           style={{ backgroundColor: c.hex }} 
                         />
                       ))}
@@ -339,7 +359,7 @@ export default function KalaKariStudio() {
                         <button 
                           key={f} 
                           onClick={() => setSelection({...selection, fabric: f})} 
-                          className={`py-4 border text-[10px] uppercase tracking-widest rounded-xl transition-all ${selection.fabric === f ? 'bg-black text-white border-black' : 'text-stone-400 border-stone-100'}`}
+                          className={`py-3 md:py-4 border text-[9px] md:text-[10px] uppercase tracking-widest rounded-xl transition-all ${selection.fabric === f ? 'bg-black text-white border-black' : 'text-stone-400 border-stone-100'}`}
                         >
                           {f}
                         </button>
@@ -347,15 +367,29 @@ export default function KalaKariStudio() {
                     </div>
                   </div>
                 </div>
-                <div className="lg:col-span-7 space-y-12">
-                   <div className="grid grid-cols-3 gap-6">
+                <div className="lg:col-span-7 space-y-10 md:space-y-12">
+                  <div className="space-y-6">
+                    <label className="text-xs uppercase tracking-widest text-stone-400">Embroidery Style</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {EMBROIDERY_STYLES.map(s => (
+                        <button 
+                          key={s} 
+                          onClick={() => setSelection({...selection, work: s})} 
+                          className={`py-3 md:py-4 border text-[9px] md:text-[10px] uppercase tracking-widest rounded-xl transition-all ${selection.work === s ? 'bg-black text-white border-black' : 'text-stone-400 border-stone-100'}`}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                   <div className="grid grid-cols-2 md:grid-cols-3 gap-5 md:gap-6">
                     {['Bust', 'Waist', 'Hips', 'Shoulder', 'Apex', 'Armhole'].map(m => (
                       <input key={m} type="text" placeholder={m} className="w-full py-4 border-b border-stone-100 outline-none text-base focus:border-black bg-transparent" />
                     ))}
                   </div>
                   <button 
                     onClick={() => addToBag({ name: `Bespoke ${customCat}`, type: 'custom', ...selection })} 
-                    className="w-full bg-[#1A1A1A] text-white py-8 rounded-full text-xs uppercase tracking-[0.3em] font-medium shadow-xl mt-10 hover:bg-black transition-all"
+                    className="w-full bg-[#1A1A1A] text-white py-6 md:py-8 rounded-full text-xs uppercase tracking-[0.3em] font-medium shadow-xl hover:bg-black transition-all"
                   >
                     Send to Studio Bag
                   </button>
@@ -367,11 +401,11 @@ export default function KalaKariStudio() {
 
         {/* --- READYMADE GALLERY --- */}
         {(view === 'collections' && colType === 'readymade') && (
-          <motion.section key="ready" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-screen-2xl mx-auto py-20 px-10">
-            <button onClick={() => {setColType(null); setView('home')}} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 hover:text-black transition-colors">
+          <motion.section key="ready" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-screen-2xl mx-auto py-12 md:py-20 px-6 md:px-10">
+            <button onClick={() => {setColType(null); setView('home')}} className="mb-8 md:mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400">
               <ArrowLeft size={18}/> Back
             </button>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-24">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-10 gap-y-12 md:gap-y-24">
               {[
                 { name: 'Dress', hasSize: true, img: ASSETS.DRESS }, 
                 { name: 'Shirt', hasSize: true, img: ASSETS.SHIRT }, 
@@ -380,11 +414,11 @@ export default function KalaKariStudio() {
                 { name: 'Scarf', hasSize: false, img: ASSETS.SCARF }
               ].map(product => (
                 <div key={product.name} onClick={() => setSelectedReadymade(product)} className="group cursor-pointer">
-                  <div className="aspect-[3/4] overflow-hidden rounded-2xl mb-8">
+                  <div className="aspect-[3/4] overflow-hidden rounded-2xl mb-6 md:mb-8">
                     <img src={product.img} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000" />
                   </div>
-                  <div className="flex justify-between items-end border-b border-stone-100 pb-6">
-                    <h4 className="font-serif text-3xl italic">{product.name}</h4>
+                  <div className="flex justify-between items-end border-b border-stone-100 pb-4 md:pb-6">
+                    <h4 className="font-serif text-2xl md:text-3xl italic">{product.name}</h4>
                     <ChevronRight size={20} className="text-stone-300 group-hover:text-black transition-colors" />
                   </div>
                 </div>
@@ -395,19 +429,19 @@ export default function KalaKariStudio() {
 
         {/* --- ARCHIVE / SAMPLES --- */}
         {view === 'samples' && (
-          <motion.section key="samples" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-screen-2xl mx-auto py-24 px-10 text-center">
-             <button onClick={() => navigateTo('home')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 hover:text-black mx-auto">
+          <motion.section key="samples" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-screen-2xl mx-auto py-12 md:py-24 px-6 md:px-10 text-center">
+             <button onClick={() => navigateTo('home')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 mx-auto">
                <ArrowLeft size={18}/> Back
              </button>
-             <h2 className="font-serif text-8xl italic mb-20 tracking-tighter">The Archive</h2>
-             <div className="columns-1 md:columns-4 gap-6 space-y-6">
+             <h2 className="font-serif text-5xl md:text-8xl italic mb-12 md:mb-20 tracking-tighter">The Archive</h2>
+             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               {archiveItems.map(item => (
                 <div key={item.id} className="relative group rounded-2xl overflow-hidden bg-stone-50">
-                  <img src={item.url} className="w-full grayscale hover:grayscale-0 transition-all duration-1000" />
+                  <img src={item.url} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" />
                   {isAdmin && (
                     <button 
                       onClick={() => handleDelete(item.id)} 
-                      className="absolute top-4 right-4 p-4 bg-white text-red-500 opacity-0 group-hover:opacity-100 rounded-full shadow-lg transition-opacity hover:bg-red-500 hover:text-white"
+                      className="absolute top-4 right-4 p-4 bg-white text-red-500 opacity-0 group-hover:opacity-100 rounded-full shadow-lg transition-opacity"
                     >
                       <Trash2 size={20}/>
                     </button>
@@ -420,52 +454,40 @@ export default function KalaKariStudio() {
 
         {/* --- STORY SECTION --- */}
         {view === 'story' && (
-          <motion.section key="story" className="max-w-4xl mx-auto py-32 px-10 text-center">
-            <button onClick={() => navigateTo('home')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 hover:text-black mx-auto">
+          <motion.section key="story" className="max-w-4xl mx-auto py-12 md:py-32 px-6 md:px-10 text-center">
+            <button onClick={() => navigateTo('home')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 mx-auto">
               <ArrowLeft size={18}/> Back
             </button>
-            <h2 className="font-serif text-8xl italic mb-16 tracking-tighter">Our Story</h2>
-            <div className="space-y-16">
-              <div className="text-2xl font-light leading-relaxed text-stone-600 space-y-8">
-                <p>
-                  KalaKari Studio, based in Lucknow, India, is a design house dedicated to heritage textile craftsmanship. 
-                  We blend ancestral threads with modern silhouettes, creating unique bespoke and luxury prêt pieces.
-                </p>
-                <p>
-                  Rooted in the heart of Awadh, our work is a tribute to the silent hands that have kept the art 
-                  of Chikan and Zardosi alive for generations. We do not just design garments; we curate heirlooms 
-                  that carry the whisper of the artisan’s needle and the weight of history.
-                </p>
-                <p>
-                  Each piece is a conscious dialogue between the past and the present—where raw silks meet 
-                  contemporary geometry, and every stitch tells a story of patience, precision, and passion.
-                </p>
+            <h2 className="font-serif text-5xl md:text-8xl italic mb-10 md:mb-16 tracking-tighter">Our Story</h2>
+            <div className="space-y-10 md:space-y-16">
+              <div className="text-lg md:text-2xl font-light leading-relaxed text-stone-600 space-y-6 md:space-y-8">
+                <p>KalaKari Studio, based in Lucknow, India, is a design house dedicated to heritage textile craftsmanship.</p>
+                <p>Rooted in the heart of Awadh, our work is a tribute to the silent hands that have kept the art of Chikan and Zardosi alive for generations.</p>
+                <p>Each piece is a conscious dialogue between the past and the present—where raw silks meet contemporary geometry.</p>
               </div>
               <div className="h-[1px] w-20 bg-stone-200 mx-auto" />
-              <p className="text-xs leading-loose tracking-[0.5em] text-stone-400 uppercase">
-                Woven Stories • Tailored Dreams
-              </p>
+              <p className="text-[9px] md:text-xs leading-loose tracking-[0.4em] text-stone-400 uppercase">Woven Stories • Tailored Dreams</p>
             </div>
           </motion.section>
         )}
 
         {/* --- SHOPPING BAG --- */}
         {view === 'cart' && (
-          <motion.section key="cart" className="max-w-4xl mx-auto py-32 px-10">
-            <button onClick={() => navigateTo('home')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 hover:text-black">
+          <motion.section key="cart" className="max-w-4xl mx-auto py-12 md:py-32 px-6 md:px-10">
+            <button onClick={() => navigateTo('home')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400">
               <ArrowLeft size={18}/> Back Shopping
             </button>
-            <h2 className="font-serif text-8xl italic tracking-tighter text-center mb-24">Your Bag</h2>
-            <div className="space-y-12 mb-20">
+            <h2 className="font-serif text-6xl md:text-8xl italic tracking-tighter text-center mb-16 md:mb-24">Your Bag</h2>
+            <div className="space-y-8 md:space-y-12 mb-16 md:mb-20">
               {cart.map(item => (
-                <div key={item.cartId} className="flex gap-10 items-center border-b border-stone-100 pb-12">
-                  <div className="w-24 h-32 bg-stone-50 rounded-2xl overflow-hidden shadow-sm">
+                <div key={item.cartId} className="flex gap-6 md:gap-10 items-center border-b border-stone-100 pb-8 md:pb-12">
+                  <div className="w-20 h-28 md:w-24 md:h-32 bg-stone-50 rounded-2xl overflow-hidden flex-shrink-0">
                     <img src={item.img || ASSETS.SAREE_MAIN} className="w-full h-full object-cover" />
                   </div>
-                  <div className="flex-1 space-y-2">
-                    <p className="font-serif italic text-4xl leading-none">{item.name}</p>
-                    <p className="text-xs uppercase tracking-[0.3em] text-stone-400">
-                      {item.type === 'custom' ? `${item.fabric} • ${item.work}` : `Color: ${item.color}`}
+                  <div className="flex-1 space-y-1">
+                    <p className="font-serif italic text-2xl md:text-4xl leading-none">{item.name}</p>
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-stone-400">
+                      {item.type === 'custom' ? `${item.fabric} • ${item.work}` : `Color: ${item.color} • Size: ${item.size}`}
                     </p>
                   </div>
                   <button onClick={() => setCart(cart.filter(i => i.cartId !== item.cartId))} className="text-stone-300 hover:text-red-500 transition-colors">
@@ -473,12 +495,12 @@ export default function KalaKariStudio() {
                   </button>
                 </div>
               ))}
-              {cart.length === 0 && <p className="text-center font-serif italic text-3xl text-stone-200 py-20">Your bag is empty.</p>}
+              {cart.length === 0 && <p className="text-center font-serif italic text-2xl text-stone-200 py-20">Your bag is empty.</p>}
             </div>
             {cart.length > 0 && (
               <button 
                 onClick={() => navigateTo('checkout')} 
-                className="w-full bg-[#1A1A1A] text-white py-10 rounded-full text-xs uppercase tracking-[0.4em] font-medium shadow-2xl hover:bg-black transition-all"
+                className="w-full bg-[#1A1A1A] text-white py-6 md:py-10 rounded-full text-xs uppercase tracking-[0.4em] font-medium shadow-2xl"
               >
                 Proceed to Checkout
               </button>
@@ -486,78 +508,64 @@ export default function KalaKariStudio() {
           </motion.section>
         )}
 
-        {/* --- CHECKOUT WORKFLOW --- */}
+        {/* --- CHECKOUT --- */}
         {view === 'checkout' && (
-          <motion.section key="checkout" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="min-h-screen flex flex-col lg:flex-row bg-white rounded-t-[3rem] overflow-hidden mt-10 border-t border-stone-100">
-            <div className="w-full lg:w-[65%] p-10 lg:p-24 xl:p-32">
-              <button onClick={() => navigateTo('cart')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 hover:text-black transition-colors">
-                <ArrowLeft size={18}/> Back to Bag
-              </button>
-              
-              <div className="flex gap-12 mb-20 text-xs font-medium uppercase tracking-[0.3em]">
-                <span className={checkoutStep === 'contact' ? 'text-black underline underline-offset-8 decoration-2' : 'text-stone-300'}>01. Contact</span>
-                <span className={checkoutStep === 'address' ? 'text-black underline underline-offset-8 decoration-2' : 'text-stone-300'}>02. Address</span>
-                <span className={checkoutStep === 'payment' ? 'text-black underline underline-offset-8 decoration-2' : 'text-stone-300'}>03. Payment</span>
+          <motion.section key="checkout" className="min-h-screen flex flex-col lg:flex-row bg-white rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden mt-10 border-t border-stone-100">
+            <div className="w-full lg:w-[65%] p-8 md:p-24 xl:p-32">
+              <button onClick={() => navigateTo('cart')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400"><ArrowLeft size={18}/> Back</button>
+              <div className="flex flex-wrap gap-6 md:gap-12 mb-16 text-[10px] md:text-xs font-medium uppercase tracking-widest">
+                <span className={checkoutStep === 'contact' ? 'text-black underline underline-offset-8' : 'text-stone-300'}>01. Contact</span>
+                <span className={checkoutStep === 'address' ? 'text-black underline underline-offset-8' : 'text-stone-300'}>02. Address</span>
+                <span className={checkoutStep === 'payment' ? 'text-black underline underline-offset-8' : 'text-stone-300'}>03. Payment</span>
               </div>
-
               <div className="max-w-md">
                 {checkoutStep === 'contact' && (
-                  <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-10">
-                    <h2 className="font-serif text-7xl italic mb-12">Contact</h2>
-                    <input type="text" placeholder="Full Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full py-6 border-b border-stone-100 outline-none focus:border-black text-lg transition-colors bg-transparent" />
-                    <input type="tel" placeholder="Mobile" value={form.mobile} onChange={e => setForm({...form, mobile: e.target.value})} className="w-full py-6 border-b border-stone-100 outline-none focus:border-black text-lg transition-colors bg-transparent" />
-                    <button onClick={() => setCheckoutStep('address')} className="w-full bg-[#1A1A1A] text-white py-8 rounded-full text-xs uppercase tracking-[0.4em] font-medium mt-12 shadow-xl hover:bg-black transition-all">Continue to Address</button>
-                  </motion.div>
+                  <div className="space-y-8">
+                    <h2 className="font-serif text-5xl md:text-7xl italic">Contact</h2>
+                    <input type="text" placeholder="Full Name" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="w-full py-5 border-b border-stone-100 outline-none focus:border-black text-lg bg-transparent" />
+                    <input type="tel" placeholder="Mobile" value={form.mobile} onChange={e => setForm({...form, mobile: e.target.value})} className="w-full py-5 border-b border-stone-100 outline-none focus:border-black text-lg bg-transparent" />
+                    <button onClick={() => setCheckoutStep('address')} className="w-full bg-black text-white py-6 rounded-full text-xs uppercase tracking-widest">Next Step</button>
+                  </div>
                 )}
                 {checkoutStep === 'address' && (
-                  <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-10">
-                    <button onClick={() => setCheckoutStep('contact')} className="flex items-center gap-2 text-xs uppercase tracking-widest text-stone-400 mb-6 hover:text-black transition-colors">
-                      <ArrowLeft size={14}/> Back
-                    </button>
-                    <h2 className="font-serif text-7xl italic mb-12">Shipping</h2>
-                    <input type="text" placeholder="House / Area / Street" value={form.house} onChange={e => setForm({...form, house: e.target.value})} className="w-full py-6 border-b border-stone-100 outline-none focus:border-black text-lg bg-transparent" />
-                    <div className="grid grid-cols-2 gap-8">
-                      <input type="text" placeholder="City" className="w-full py-6 border-b border-stone-100 outline-none focus:border-black text-lg bg-transparent" />
-                      <input type="text" placeholder="Pincode" className="w-full py-6 border-b border-stone-100 outline-none focus:border-black text-lg bg-transparent" />
+                  <div className="space-y-8">
+                    <h2 className="font-serif text-5xl md:text-7xl italic">Shipping</h2>
+                    <input type="text" placeholder="House / Street" value={form.house} onChange={e => setForm({...form, house: e.target.value})} className="w-full py-5 border-b border-stone-100 outline-none focus:border-black text-lg bg-transparent" />
+                    <div className="grid grid-cols-2 gap-5">
+                      <input type="text" placeholder="City" className="w-full py-5 border-b border-stone-100 outline-none bg-transparent" />
+                      <input type="text" placeholder="Pincode" className="w-full py-5 border-b border-stone-100 outline-none bg-transparent" />
                     </div>
-                    <button onClick={() => setCheckoutStep('payment')} className="w-full bg-[#1A1A1A] text-white py-8 rounded-full text-xs uppercase tracking-[0.4em] font-medium mt-12 shadow-xl hover:bg-black transition-all">Continue to Payment</button>
-                  </motion.div>
+                    <button onClick={() => setCheckoutStep('payment')} className="w-full bg-black text-white py-6 rounded-full text-xs uppercase tracking-widest">Next Step</button>
+                  </div>
                 )}
                 {checkoutStep === 'payment' && (
-                  <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-12">
-                    <button onClick={() => setCheckoutStep('address')} className="flex items-center gap-2 text-xs uppercase tracking-widest text-stone-400 mb-6 hover:text-black transition-colors">
-                      <ArrowLeft size={14}/> Back
-                    </button>
-                    <h2 className="font-serif text-7xl italic">Payment</h2>
-                    <div className="p-12 border border-black rounded-2xl flex justify-between items-center bg-stone-50/30">
-                      <span className="text-xs font-medium tracking-widest uppercase text-stone-600">Confirmation via WhatsApp</span>
-                      <CheckCircle2 size={24} className="text-black"/>
+                  <div className="space-y-10">
+                    <h2 className="font-serif text-5xl md:text-7xl italic">Payment</h2>
+                    <div className="p-8 border border-black rounded-2xl bg-stone-50/30">
+                      <p className="text-[10px] uppercase tracking-widest text-stone-500 mb-2">Order Method</p>
+                      <p className="text-xs font-bold tracking-widest">CONSULTATION VIA WHATSAPP</p>
                     </div>
-                    <button onClick={sendWhatsApp} className="w-full bg-[#1A1A1A] text-white py-10 rounded-full text-xs uppercase tracking-[0.5em] font-medium flex items-center justify-center gap-4 shadow-2xl hover:bg-black transition-all">
-                      Confirm via WhatsApp <Send size={20}/>
+                    <button onClick={sendWhatsApp} className="w-full bg-[#1A1A1A] text-white py-8 rounded-full text-xs uppercase tracking-[0.4em] flex items-center justify-center gap-4">
+                      Order on WhatsApp <Send size={18}/>
                     </button>
-                  </motion.div>
+                  </div>
                 )}
               </div>
             </div>
-            <div className="w-full lg:w-[35%] bg-[#FDFBF7] p-10 lg:p-20 border-l border-stone-100">
-              <h3 className="font-serif text-5xl italic mb-16">Summary</h3>
-              <div className="space-y-10">
+            <div className="w-full lg:w-[35%] bg-[#FDFBF7] p-8 md:p-20 border-l border-stone-100">
+              <h3 className="font-serif text-3xl md:text-5xl italic mb-10">Summary</h3>
+              <div className="space-y-8">
                 {cart.map(item => (
-                  <div key={item.cartId} className="flex gap-8 items-center">
-                    <div className="w-20 h-28 bg-white rounded-xl overflow-hidden shadow-sm flex-shrink-0">
+                  <div key={item.cartId} className="flex gap-6 items-center">
+                    <div className="w-16 h-20 bg-white rounded-xl overflow-hidden shadow-sm">
                       <img src={item.img || ASSETS.SAREE_MAIN} className="w-full h-full object-cover" />
                     </div>
-                    <div className="space-y-1">
-                      <p className="font-serif text-2xl italic leading-none">{item.name}</p>
-                      <p className="text-[10px] uppercase tracking-widest text-stone-400">Qty: 01</p>
+                    <div>
+                      <p className="font-serif text-xl italic">{item.name}</p>
+                      <p className="text-[9px] uppercase tracking-widest text-stone-400">Studio Item</p>
                     </div>
                   </div>
                 ))}
-              </div>
-              <div className="border-t border-stone-200 mt-12 pt-10 flex justify-between text-xs uppercase tracking-[0.4em] font-bold">
-                <span>Total</span>
-                <span>Price on Request</span>
               </div>
             </div>
           </motion.section>
@@ -565,70 +573,41 @@ export default function KalaKariStudio() {
 
         {/* --- ACCOUNT VIEW --- */}
         {view === 'account' && (
-          <motion.section key="account" className="max-w-6xl mx-auto py-32 px-10">
-            <button onClick={() => navigateTo('home')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 hover:text-black transition-colors">
+          <motion.section key="account" className="max-w-6xl mx-auto py-12 md:py-32 px-6 md:px-10">
+            <button onClick={() => navigateTo('home')} className="mb-8 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400">
               <ArrowLeft size={18}/> Back
             </button>
-            <div className="flex justify-between items-end border-b border-stone-100 pb-10 mb-20">
-              <h2 className="font-serif text-7xl italic tracking-tighter">My Space</h2>
-              <button 
-                onClick={handleLogout} 
-                className="text-stone-400 hover:text-black flex items-center gap-2 text-xs uppercase tracking-[0.2em] font-medium transition-colors"
-              >
-                <LogOut size={18}/> Sign Out
+            <div className="flex justify-between items-end border-b border-stone-100 pb-8 mb-16">
+              <h2 className="font-serif text-5xl md:text-7xl italic tracking-tighter">My Space</h2>
+              <button onClick={handleLogout} className="text-stone-400 hover:text-black flex items-center gap-2 text-[10px] uppercase tracking-widest">
+                <LogOut size={16}/> Sign Out
               </button>
             </div>
             
             {isAdmin ? (
-              <div className="grid lg:grid-cols-12 gap-16">
-                <div className="lg:col-span-5 border border-dashed border-stone-300 p-20 text-center rounded-3xl bg-stone-50/50">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-16">
+                <div className="lg:col-span-5 border border-dashed border-stone-300 p-12 md:p-20 text-center rounded-3xl bg-stone-50/50">
                   <label className="cursor-pointer group block">
-                    {uploading ? (
-                      <Loader2 className="animate-spin mx-auto text-stone-300" />
-                    ) : (
-                      <Upload size={40} className="mx-auto mb-6 text-stone-200 group-hover:text-black transition-colors" />
-                    )}
-                    <span className="text-xs uppercase tracking-widest text-stone-400 group-hover:text-black transition-colors">Upload to Archive</span>
+                    {uploading ? <Loader2 className="animate-spin mx-auto text-stone-300" /> : <Upload size={32} className="mx-auto mb-4 text-stone-200" />}
+                    <span className="text-[10px] uppercase tracking-widest text-stone-400">Upload to Archive</span>
                     <input type="file" className="hidden" onChange={handleUpload} />
                   </label>
                 </div>
-                <div className="lg:col-span-7 grid grid-cols-3 gap-6 h-[500px] overflow-y-auto pr-4 scrollbar-hide rounded-2xl">
+                <div className="lg:col-span-7 grid grid-cols-3 gap-4 h-[400px] overflow-y-auto pr-4 scrollbar-hide">
                   {archiveItems.map(item => (
-                    <div key={item.id} className="aspect-square relative group rounded-2xl overflow-hidden bg-stone-50 shadow-sm">
-                      <img src={item.url} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" />
-                      <button 
-                        onClick={() => handleDelete(item.id)} 
-                        className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                      >
-                        <Trash2 size={24}/>
-                      </button>
+                    <div key={item.id} className="aspect-square relative group rounded-xl overflow-hidden bg-stone-50">
+                      <img src={item.url} className="w-full h-full object-cover" />
+                      <button onClick={() => handleDelete(item.id)} className="absolute inset-0 bg-black/40 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><Trash2 size={20}/></button>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="max-w-md mx-auto py-32 border border-stone-100 text-center rounded-[3rem] bg-white shadow-sm">
-                <p className="font-serif text-3xl italic mb-4">{user?.email}</p>
-                <p className="text-xs uppercase tracking-widest text-stone-400">Studio Member</p>
+              <div className="max-w-md mx-auto py-24 border border-stone-100 text-center rounded-[2rem] bg-white">
+                <p className="font-serif text-2xl italic mb-2">{user?.email}</p>
+                <p className="text-[10px] uppercase tracking-widest text-stone-400">Studio Member</p>
               </div>
             )}
-          </motion.section>
-        )}
-
-        {/* --- T&C / POLICY --- */}
-        {(view === 'terms' || view === 'policy') && (
-          <motion.section key={view} className="max-w-4xl mx-auto py-32 px-10">
-            <button onClick={() => navigateTo('home')} className="mb-12 flex items-center gap-3 text-xs uppercase tracking-widest text-stone-400 hover:text-black transition-colors">
-              <ArrowLeft size={18}/> Back
-            </button>
-            <h2 className="font-serif text-7xl italic mb-16 tracking-tighter">
-              {view === 'terms' ? 'Terms & Conditions' : 'Privacy Policy'}
-            </h2>
-            <ul className="space-y-10 list-decimal list-outside pl-6 text-xs leading-loose tracking-[0.2em] text-stone-500 uppercase">
-              {(view === 'terms' ? TERMS_AND_CONDITIONS : PRIVACY_POLICY).map((text, index) => (
-                <li key={index} className="pl-4">{text}</li>
-              ))}
-            </ul>
           </motion.section>
         )}
       </AnimatePresence>
@@ -636,59 +615,36 @@ export default function KalaKariStudio() {
       {/* --- PRODUCT DRAWER --- */}
       <AnimatePresence>
         {selectedReadymade && (
-          <div className="fixed inset-0 z-[200] flex justify-end bg-black/20 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[2000] flex justify-end bg-black/20 backdrop-blur-sm">
             <motion.div 
-              initial={{ x: '100%' }} 
-              animate={{ x: 0 }} 
-              exit={{ x: '100%' }} 
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="bg-[#FDFBF7] w-full max-w-xl h-full shadow-2xl p-16 flex flex-col overflow-y-auto rounded-l-[3rem] border-l border-stone-100"
+              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+              className="bg-[#FDFBF7] w-full max-w-xl h-full shadow-2xl p-8 md:p-16 flex flex-col overflow-y-auto"
             >
-              <button onClick={() => setSelectedReadymade(null)} className="mb-10 text-stone-400 hover:text-black self-start transition-colors">
-                <X size={32} strokeWidth={1.5} />
-              </button>
-              <div className="aspect-[4/5] rounded-3xl overflow-hidden mb-12 shadow-sm">
+              <button onClick={() => setSelectedReadymade(null)} className="mb-10 text-stone-400 self-start"><X size={32}/></button>
+              <div className="aspect-[4/5] rounded-2xl overflow-hidden mb-10">
                 <img src={selectedReadymade.img} className="w-full h-full object-cover" />
               </div>
-              <h3 className="font-serif text-6xl italic mb-12 leading-none">{selectedReadymade.name}</h3>
-              <div className="space-y-12">
-                <div className="space-y-6">
-                  <label className="text-xs uppercase tracking-[0.3em] text-stone-400">Palette</label>
-                  <div className="flex gap-5">
+              <h3 className="font-serif text-4xl md:text-6xl italic mb-8">{selectedReadymade.name}</h3>
+              <div className="space-y-10">
+                <div className="space-y-4">
+                  <label className="text-[10px] uppercase tracking-widest text-stone-400">Palette</label>
+                  <div className="flex flex-wrap gap-4">
                     {COLORS.map(c => (
-                      <button 
-                        key={c.name} 
-                        onClick={() => setSelection({...selection, color: c.name})} 
-                        className={`w-10 h-10 rounded-full border border-stone-100 transition-all ${selection.color === c.name ? 'ring-2 ring-black ring-offset-4 scale-110' : ''}`} 
-                        style={{ backgroundColor: c.hex }} 
-                      />
+                      <button key={c.name} onClick={() => setSelection({...selection, color: c.name})} className={`w-8 h-8 rounded-full border border-stone-100 ${selection.color === c.name ? 'ring-2 ring-black ring-offset-2' : ''}`} style={{ backgroundColor: c.hex }} />
                     ))}
                   </div>
                 </div>
-                
                 {selectedReadymade.hasSize && (
-                  <div className="space-y-6">
-                    <label className="text-xs uppercase tracking-[0.3em] text-stone-400">Select Size</label>
-                    <div className="grid grid-cols-6 gap-3">
+                  <div className="space-y-4">
+                    <label className="text-[10px] uppercase tracking-widest text-stone-400">Size</label>
+                    <div className="grid grid-cols-6 gap-2">
                       {SIZES.map(s => (
-                        <button 
-                          key={s} 
-                          onClick={() => setSelection({...selection, size: s})} 
-                          className={`py-5 text-xs border rounded-xl transition-all ${selection.size === s ? 'bg-black text-white border-black' : 'border-stone-100 text-stone-400 hover:border-black'}`}
-                        >
-                          {s}
-                        </button>
+                        <button key={s} onClick={() => setSelection({...selection, size: s})} className={`py-4 text-[10px] border rounded-lg ${selection.size === s ? 'bg-black text-white' : 'border-stone-100'}`}>{s}</button>
                       ))}
                     </div>
                   </div>
                 )}
-                
-                <button 
-                  onClick={() => addToBag({ ...selectedReadymade, ...selection })} 
-                  className="w-full bg-[#1A1A1A] text-white py-8 rounded-full text-xs uppercase tracking-[0.4em] font-medium mt-10 shadow-xl hover:bg-black transition-all"
-                >
-                  Add to Cart
-                </button>
+                <button onClick={() => addToBag({ ...selectedReadymade, ...selection })} className="w-full bg-black text-white py-6 rounded-full text-xs uppercase tracking-widest font-bold">Add to Bag</button>
               </div>
             </motion.div>
           </div>
@@ -696,55 +652,20 @@ export default function KalaKariStudio() {
       </AnimatePresence>
 
       {/* --- FOOTER --- */}
-      <footer className="px-10 py-40 bg-[#FDFBF7] border-t border-stone-100 text-center relative">
-        <div className="flex justify-center gap-20 mb-24 text-stone-300">
-          <a href="https://instagram.com/hajelachhaya" target="_blank" rel="noopener noreferrer" className="hover:text-black transition-all hover:scale-110">
-            <Instagram size={28} strokeWidth={1.2} />
-          </a>
-          <a href="https://facebook.com/chhaya.hajela" target="_blank" rel="noopener noreferrer" className="hover:text-black transition-all hover:scale-110">
-            <Facebook size={28} strokeWidth={1.2} />
-          </a>
-          <a href="mailto:chhayahajela167@gmail.com" className="hover:text-black transition-all hover:scale-110">
-            <Mail size={28} strokeWidth={1.2} />
-          </a>
+      <footer className="px-6 md:px-10 py-24 md:py-40 bg-[#FDFBF7] border-t border-stone-100 text-center relative">
+        <div className="flex justify-center gap-10 md:gap-20 mb-16 text-stone-300">
+          <a href="https://instagram.com/hajelachhaya" target="_blank" className="hover:text-black"><Instagram size={24} /></a>
+          <a href="https://facebook.com/chhaya.hajela" target="_blank" className="hover:text-black"><Facebook size={24} /></a>
+          <a href="mailto:chhayahajela167@gmail.com" className="hover:text-black"><Mail size={24} /></a>
         </div>
-
-        <div className="flex flex-col md:flex-row justify-center items-center gap-12 md:gap-24 mb-20 text-xs font-medium uppercase tracking-[0.4em] text-stone-400">
-          <button onClick={() => navigateTo('terms')} className="hover:text-black transition-colors">Terms & Conditions</button>
-          <button onClick={() => navigateTo('policy')} className="hover:text-black transition-colors">Privacy Policy</button>
-          
-          <div className="relative">
-            <button 
-              onClick={() => setShowSupport(!showSupport)} 
-              className={`${showSupport ? 'text-black font-bold underline underline-offset-8' : 'hover:text-black'} transition-all duration-300`}
-            >
-              Customer Support
-            </button>
-            <AnimatePresence>
-              {showSupport && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 15 }} 
-                  animate={{ opacity: 1, y: 0 }} 
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute left-1/2 -translate-x-1/2 bottom-full mb-8 flex flex-col gap-5 w-max bg-white p-8 border border-stone-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2rem] z-[110]"
-                >
-                  <a href="tel:+917991464638" className="text-[10px] tracking-[0.3em] text-stone-500 hover:text-black transition-colors">+91 7991464638</a>
-                  <a href="tel:+919589129241" className="text-[10px] tracking-[0.3em] text-stone-500 hover:text-black transition-colors">+91 9589129241</a>
-                  <a href="tel:+919301661160" className="text-[10px] tracking-[0.3em] text-stone-500 hover:text-black transition-colors">+91 9301661160</a>
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white rotate-45 border-r border-b border-stone-100"></div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+        <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-20 mb-16 text-[10px] font-medium uppercase tracking-[0.3em] text-stone-400">
+          <button onClick={() => navigateTo('terms')}>Terms</button>
+          <button onClick={() => navigateTo('policy')}>Privacy</button>
+          <button onClick={() => setShowSupport(!showSupport)} className={showSupport ? 'text-black font-bold' : ''}>Support</button>
         </div>
-
-        <div className="space-y-4">
-          <p className="text-[10px] font-medium uppercase tracking-[1.2em] text-stone-400">
-              © 2026 KALAKARI STUDIO • LUCKNOW 
-          </p>
-          <p className="text-[8px] uppercase tracking-widest text-stone-400">
-            Woven Stories • Tailored Dreams
-          </p>
+        <div className="space-y-3">
+          <p className="text-[9px] md:text-[10px] font-medium uppercase tracking-[1em] text-stone-400">© 2026 KALAKARI STUDIO</p>
+          <p className="text-[7px] md:text-[8px] uppercase tracking-widest text-stone-400">Woven Stories • Tailored Dreams</p>
         </div>
       </footer>
     </div>
