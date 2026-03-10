@@ -154,9 +154,41 @@ export default function KalaKariStudio() {
     setSelectedReadymade(null);
   };
 
-  const handleUpload = (e: any) => {
+  // REAL UPLOAD LOGIC REPLACING FAKE TIMEOUT
+  const handleUpload = async (e: any) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
     setUploading(true);
-    setTimeout(() => setUploading(false), 2000);
+    try {
+      const fileName = `${Date.now()}-${file.name}`;
+      
+      // 1. Upload to Storage
+      const { data: storageData, error: storageError } = await supabase.storage
+        .from('archive')
+        .upload(fileName, file);
+
+      if (storageError) throw storageError;
+
+      // 2. Get Public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('archive')
+        .getPublicUrl(fileName);
+
+      // 3. Save to Database
+      const { data, error: dbError } = await supabase
+        .from('archive_images')
+        .insert([{ url: publicUrl }])
+        .select();
+
+      if (dbError) throw dbError;
+
+      setArchiveItems(prev => [data[0], ...prev]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleDelete = (id: number) => {
