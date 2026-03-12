@@ -440,18 +440,20 @@ export default function KalaKariStudio() {
             </button>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-10 gap-y-12 md:gap-y-24">
               {[
-                { name: 'Dress', hasSize: true, img: ASSETS.DRESS }, 
-                { name: 'Shirt', hasSize: true, img: ASSETS.SHIRT }, 
-                { name: 'T-Shirt', hasSize: true, img: ASSETS.TSHIRT }, 
-                { name: 'Stole', hasSize: false, img: ASSETS.STOLE }, 
-                { name: 'Scarf', hasSize: false, img: ASSETS.SCARF }
+                { name: 'Dress', hasSize: true, img: ASSETS.DRESS, price: 1249 }, 
+                { name: 'Shirt', hasSize: true, img: ASSETS.SHIRT, price: 899 }, 
+                { name: 'T-Shirt', hasSize: true, img: ASSETS.TSHIRT, price: 799 }, 
+                { name: 'Stole', hasSize: false, img: ASSETS.STOLE, price: 1299 }
               ].map(product => (
                 <div key={product.name} onClick={() => setSelectedReadymade(product)} className="group cursor-pointer">
                   <div className="aspect-[3/4] overflow-hidden rounded-2xl mb-6 md:mb-8">
                     <img src={product.img} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000" />
                   </div>
                   <div className="flex justify-between items-end border-b border-stone-100 pb-4 md:pb-6">
-                    <h4 className="font-serif text-2xl md:text-3xl italic">{product.name}</h4>
+                    <div>
+                      <h4 className="font-serif text-2xl md:text-3xl italic">{product.name}</h4>
+                      <p className="text-[10px] uppercase tracking-widest text-stone-400 mt-1">₹{product.price}</p>
+                    </div>
                     <ChevronRight size={20} className="text-stone-300 group-hover:text-black transition-colors" />
                   </div>
                 </div>
@@ -689,7 +691,8 @@ export default function KalaKariStudio() {
               <div className="aspect-[4/5] rounded-2xl overflow-hidden mb-10">
                 <img src={selectedReadymade.img} className="w-full h-full object-cover" />
               </div>
-              <h3 className="font-serif text-4xl md:text-6xl italic mb-8">{selectedReadymade.name}</h3>
+              <h3 className="font-serif text-4xl md:text-6xl italic mb-4">{selectedReadymade.name}</h3>
+              <p className="font-sans text-xl tracking-wider text-stone-500 mb-8">₹{selectedReadymade.price}</p>
               <div className="space-y-10">
                 <div className="space-y-4">
                   <label className="text-[10px] uppercase tracking-widest text-stone-400">Palette</label>
