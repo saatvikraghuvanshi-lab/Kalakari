@@ -13,7 +13,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 import { 
   User, ShoppingBag, ArrowLeft, ChevronRight, X, Info, 
   Upload, Trash2, Loader2, LogOut, CheckCircle2, Send, 
-  Instagram, Facebook, Mail, ChevronUp, ChevronDown, Menu
+  Instagram, Facebook, Mail, ChevronUp, ChevronDown, Menu, Ruler
 } from 'lucide-react';
 
 // --- CONSTANTS & ASSETS ---
@@ -46,6 +46,16 @@ const COLORS = [
 const FABRICS = ['Silk', 'Georgette', 'Organza', 'Chiffon', 'Crepe', 'Chanderi', 'Raw Silk', 'Cotton'];
 const EMBROIDERY_STYLES = ['Zardosi', 'Mirror Work', 'Thread Work', 'Gota Patti', 'Aari','Sequin','NONE'];
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+
+// --- SIZE CHART DATA ---
+const SIZE_CHART = [
+  { size: "XS", chest: "34\"", waist: "28\"", length: "26\"" },
+  { size: "S", chest: "36\"", waist: "30\"", length: "27\"" },
+  { size: "M", chest: "38\"", waist: "32\"", length: "28\"" },
+  { size: "L", chest: "40\"", waist: "34\"", length: "29\"" },
+  { size: "XL", chest: "42\"", waist: "36\"", length: "30\"" },
+  { size: "XXL", chest: "44\"", waist: "38\"", length: "31\"" },
+];
 
 // RESTORED LEGAL CONTENT
 const TERMS_AND_CONDITIONS = [
@@ -81,6 +91,7 @@ export default function KalaKariStudio() {
   const [showCollections, setShowCollections] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [selectedReadymade, setSelectedReadymade] = useState<any>(null);
+  const [showSizeChart, setShowSizeChart] = useState(false); // Added for Size Chart
   const [checkoutStep, setCheckoutStep] = useState('contact');
   const [uploading, setUploading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -163,19 +174,16 @@ export default function KalaKariStudio() {
     try {
       const fileName = `${Date.now()}-${file.name}`;
       
-      // 1. Upload to Storage
       const { data: storageData, error: storageError } = await supabase.storage
         .from('archive')
         .upload(fileName, file);
 
       if (storageError) throw storageError;
 
-      // 2. Get Public URL
       const { data: { publicUrl } } = supabase.storage
         .from('archive')
         .getPublicUrl(fileName);
 
-      // 3. Save to Database
       const { data, error: dbError } = await supabase
         .from('archive_images')
         .insert([{ url: publicUrl }])
@@ -200,7 +208,6 @@ export default function KalaKariStudio() {
     window.open(`https://wa.me/917991464638?text=${encodeURIComponent(text)}`);
   };
 
-  // --- RENDERING GATE ---
   if (loading) return null;
 
   if (!user) {
@@ -229,7 +236,6 @@ export default function KalaKariStudio() {
           KalaKari
         </span>
 
-        {/* --- DESKTOP NAVIGATION --- */}
         <div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex gap-16 text-[13px] font-bold uppercase tracking-[0.3em] text-stone-500">
           <div className="relative">
             <button 
@@ -282,7 +288,6 @@ export default function KalaKariStudio() {
               </span>
             )}
           </button>
-          {/* MOBILE TOGGLE */}
           <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden text-stone-600">
             <Menu size={24} />
           </button>
@@ -323,7 +328,6 @@ export default function KalaKariStudio() {
             <h2 className="font-serif text-[2.8rem] md:text-6xl italic leading-tight mb-12 md:mb-20 max-w-4xl tracking-tighter">
               Handcrafted <br /> with heritage.
             </h2>
-            {/* Gallery: Stacks on Mobile */}
             <div className="flex flex-col md:grid md:grid-cols-12 gap-5 md:h-[50vh] mb-16 md:mb-20">
               <div className="h-64 md:h-auto md:col-span-4 overflow-hidden rounded-2xl shadow-sm">
                 <img src={ASSETS.SAREE_MAIN} className="h-full w-full object-cover hover:scale-105 transition-transform duration-1000" />
@@ -704,7 +708,12 @@ export default function KalaKariStudio() {
                 </div>
                 {selectedReadymade.hasSize && (
                   <div className="space-y-4">
-                    <label className="text-[10px] uppercase tracking-widest text-stone-400">Size</label>
+                    <div className="flex justify-between items-center">
+                      <label className="text-[10px] uppercase tracking-widest text-stone-400">Size</label>
+                      <button onClick={() => setShowSizeChart(true)} className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-black font-bold border-b border-black pb-1">
+                        <Ruler size={14}/> Size Guide
+                      </button>
+                    </div>
                     <div className="grid grid-cols-6 gap-2">
                       {SIZES.map(s => (
                         <button key={s} onClick={() => setSelection({...selection, size: s})} className={`py-4 text-[10px] border rounded-lg ${selection.size === s ? 'bg-black text-white' : 'border-stone-100'}`}>{s}</button>
@@ -714,6 +723,42 @@ export default function KalaKariStudio() {
                 )}
                 <button onClick={() => addToBag({ ...selectedReadymade, ...selection })} className="w-full bg-black text-white py-6 rounded-full text-xs uppercase tracking-widest font-bold">Add to Bag</button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* --- SIZE CHART MODAL --- */}
+      <AnimatePresence>
+        {showSizeChart && (
+          <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/40 backdrop-blur-md p-6">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white w-full max-w-lg rounded-3xl p-8 md:p-12 shadow-2xl relative">
+              <button onClick={() => setShowSizeChart(false)} className="absolute top-6 right-6 text-stone-300 hover:text-black"><X size={24}/></button>
+              <h4 className="font-serif text-3xl italic mb-8">Size Guide</h4>
+              <p className="text-[10px] uppercase tracking-widest text-stone-400 mb-6">Measurements in Inches</p>
+              <div className="overflow-hidden border border-stone-100 rounded-2xl">
+                <table className="w-full text-left text-[11px] uppercase tracking-wider">
+                  <thead className="bg-stone-50 text-stone-400">
+                    <tr>
+                      <th className="p-4 font-medium">Size</th>
+                      <th className="p-4 font-medium">Chest</th>
+                      <th className="p-4 font-medium">Waist</th>
+                      <th className="p-4 font-medium">Length</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100">
+                    {SIZE_CHART.map((row) => (
+                      <tr key={row.size} className="hover:bg-stone-50/50 transition-colors">
+                        <td className="p-4 font-bold">{row.size}</td>
+                        <td className="p-4 text-stone-500">{row.chest}</td>
+                        <td className="p-4 text-stone-500">{row.waist}</td>
+                        <td className="p-4 text-stone-500">{row.length}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-8 text-[10px] leading-relaxed text-stone-400 italic text-center">All items are tailored for a comfortable, regular fit.</p>
             </motion.div>
           </div>
         )}
@@ -731,7 +776,6 @@ export default function KalaKariStudio() {
           <button onClick={() => navigateTo('terms')}>Terms & Conditions</button>
           <button onClick={() => navigateTo('policy')}>Privacy Policy</button>
           
-          {/* RESTORED SUPPORT BUBBLE LOGIC */}
           <div className="relative">
             <button 
               onClick={() => setShowSupport(!showSupport)} 
